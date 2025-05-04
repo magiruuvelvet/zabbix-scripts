@@ -2,9 +2,9 @@
 
 # Usage:
 #
-# before_actions:
+# before_backup:
 #   - borgmatic.sh start
-# after_actions:
+# after_backup:
 #   - borgmatic.sh done
 # on_error:
 #   - borgmatic.sh fail
