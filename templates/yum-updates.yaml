@@ -1,0 +1,32 @@
+zabbix_export:
+  version: '7.2'
+  template_groups:
+    - uuid: 9ba2aec3c33c49cb810607531cc4892c
+      name: 'Templates/Package manager'
+  templates:
+    - uuid: b54f9bf59d6f45a1acfe5f40fa540a7c
+      template: 'yum updates'
+      name: 'yum updates'
+      groups:
+        - name: 'Templates/Package manager'
+      items:
+        - uuid: 826381c571ec47c8aec99d4eb3c329ba
+          name: 'Packages to update'
+          type: TRAP
+          key: yum.packagestoupdate.count
+          history: 15d
+          trends: 30d
+          triggers:
+            - uuid: 6f687e124d674e36954394ab6c22ab8b
+              expression: 'last(/yum updates/yum.packagestoupdate.count)>0'
+              name: 'Updates available'
+              priority: WARNING
+        - uuid: 6b4f5969f1d1416098adc9beef3565fb
+          name: 'Packages to update (details)'
+          type: TRAP
+          key: yum.packagestoupdate.details
+          history: 15d
+          value_type: TEXT
+      tags:
+        - tag: class
+          value: software
