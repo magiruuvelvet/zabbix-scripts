@@ -9,6 +9,9 @@
 # on_error:
 #   - borgmatic.sh fail
 
+export LANG=C
+export LANGUAGE=
+
 BORG_ACTION="$1"
 BORG_TIMESTAMP="$(date -u +%s)"
 
