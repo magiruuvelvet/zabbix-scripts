@@ -8,7 +8,14 @@ yum -q makecache
 
 # obtain a list of available package updates with their new version
 YUM_UPDATES_DETAILS="$(yum check-update | tail -n +3 | awk '{print $1 "=" $2}')"
-YUM_UPDATES_COUNT="$(echo -n "${YUM_UPDATES_DETAILS}" | wc -l)"
+
+if [ -z "$YUM_UPDATES_DETAILS" ]; then
+  # counting doesn't work correctly if the variable is empty
+  YUM_UPDATES_COUNT=0
+else
+  # count actual lines regardless of line ending (or lack thereof)
+  YUM_UPDATES_COUNT="$(printf "%s_" "${YUM_UPDATES_DETAILS}" | grep -c "^")"
+fi
 
 # build the stream for zabbix sender
 ZBX_STREAM=""
