@@ -13,6 +13,6 @@ YUM_UPDATES_COUNT="$(echo "${YUM_UPDATES_DETAILS}" | wc -l)"
 # build the stream for zabbix sender
 ZBX_STREAM=""
 ZBX_STREAM+="- yum.packagestoupdate.count ${YUM_UPDATES_COUNT}\n"
-ZBX_STREAM+="- yum.packagestoupdate.details $(echo "${YUM_UPDATES_DETAILS}" | tr "\n" " ")\n"
+ZBX_STREAM+="- yum.packagestoupdate.details \"$(echo "${YUM_UPDATES_DETAILS}" | tr "\n" " ")\"\n"
 
 echo -en "${ZBX_STREAM}" | zabbix_sender -c "/etc/zabbix/zabbix_agent2.conf" -i -
