@@ -1,0 +1,271 @@
+zabbix_export:
+  version: '7.2'
+  template_groups:
+    - uuid: 7058ffdc194c46a794716a12cadbdfc3
+      name: 'Templates/Backup solutions'
+  templates:
+    - uuid: 2d2521bf091841ef881b8051d6d006ba
+      template: borgmatic
+      name: borgmatic
+      groups:
+        - name: 'Templates/Backup solutions'
+      items:
+        - uuid: ac11849d34a947a1997c02ab41ac53ad
+          name: 'Last action timestamp'
+          type: TRAP
+          key: borgmatic.last.action.timestamp
+          history: 15d
+          trends: 30d
+          description: |
+            Execution time of the last performed action.
+            
+            Format: Unix timestamp
+          tags:
+            - tag: class
+              value: backup
+            - tag: target
+              value: borgmatic
+        - uuid: 36433c4003a24e68823a642843c2ac13
+          name: 'Last action type'
+          type: TRAP
+          key: borgmatic.last.action.type
+          history: 15d
+          value_type: TEXT
+          description: |
+            Type of the last performed action.
+            
+            One of: start, done, fail
+          tags:
+            - tag: class
+              value: backup
+            - tag: target
+              value: borgmatic
+        - uuid: 162e2a3194484b3e92ece83abf516e33
+          name: 'Last backup age'
+          type: CALCULATED
+          key: borgmatic.last.backup.age
+          delay: 10m
+          history: 15d
+          trends: 30d
+          params: now()-last(//borgmatic.last.backup.timestamp)
+          description: |
+            Age of the last successful backup in seconds.
+            
+            This calculated item periodically updates the last backup age to ensure reliable trigger execution, even when borgmatic fails to send data entirely. Implementing it this way is easier than using agent checks as it avoids unnecessary technical depth with borgmatic.
+          tags:
+            - tag: borgmatic-target
+              value: this-archive
+            - tag: class
+              value: backup
+            - tag: target
+              value: borgmatic
+          triggers:
+            - uuid: 146a8e5804f34f87b10db34eff4a0920
+              expression: 'last(/borgmatic/borgmatic.last.backup.age) > {$BORGMATIC_LAST_BACKUP_MAX_AGE}'
+              name: 'Last backup is older than allowed age'
+              priority: HIGH
+              description: 'No successful backup completed in the last {$LAST_BACKUP_MAX_AGE} seconds. Please check your borgmatic and server logs.'
+        - uuid: 45988226b4584ea081c6e096d2e794c0
+          name: 'Last backup completion status'
+          type: TRAP
+          key: borgmatic.last.backup.complete
+          history: 15d
+          trends: 30d
+          description: |
+            Completion status of the last backup run as boolean.
+            
+            One of: 0 (fail), 1 (success)
+          tags:
+            - tag: borgmatic-target
+              value: this-archive
+            - tag: class
+              value: backup
+            - tag: target
+              value: borgmatic
+          triggers:
+            - uuid: 4b1f5540f0424eb3a68cf027cd820279
+              expression: last(/borgmatic/borgmatic.last.backup.complete)=0
+              name: 'Last backup run failed'
+              priority: HIGH
+              description: 'Last backup run failed with errors. Please check your borgmatic and server logs.'
+        - uuid: 2e7922f3360048bc8b05814204ecc65b
+          name: 'Last backup compressed size'
+          type: TRAP
+          key: borgmatic.last.backup.compressed_size
+          history: 15d
+          trends: 30d
+          description: 'Compressed size in bytes of the last backup. This is the compressed total of the last backup archive.'
+          tags:
+            - tag: borgmatic-target
+              value: this-archive
+            - tag: class
+              value: backup
+            - tag: target
+              value: borgmatic
+        - uuid: d47215fc3b154310a2165956c63450ed
+          name: 'Last backup deduplicated size'
+          type: TRAP
+          key: borgmatic.last.backup.deduplicated_size
+          history: 15d
+          trends: 30d
+          description: 'Deduplicated size in bytes of the last backup. This is the deduplicated total of the last backup archive.'
+          tags:
+            - tag: borgmatic-target
+              value: this-archive
+            - tag: class
+              value: backup
+            - tag: target
+              value: borgmatic
+        - uuid: 163577a0df94447e97c425c769c62ca1
+          name: 'Last backup duration'
+          type: TRAP
+          key: borgmatic.last.backup.duration
+          history: 15d
+          value_type: FLOAT
+          trends: 30d
+          description: 'Duration of the last backup run in seconds.'
+          tags:
+            - tag: borgmatic-target
+              value: this-archive
+            - tag: class
+              value: backup
+            - tag: target
+              value: borgmatic
+        - uuid: 10f46b7521814fa6898a4a1c6e871582
+          name: 'Last backup total files'
+          type: TRAP
+          key: borgmatic.last.backup.files
+          history: 15d
+          trends: 30d
+          description: 'Number of total files stored in the last backup.'
+          tags:
+            - tag: borgmatic-target
+              value: this-archive
+            - tag: class
+              value: backup
+            - tag: target
+              value: borgmatic
+        - uuid: eee1a46f3ce9490597bc4069f0df7c49
+          name: 'Last backup original size'
+          type: TRAP
+          key: borgmatic.last.backup.original_size
+          history: 15d
+          trends: 30d
+          description: 'Original size in bytes of the last backup. This is the uncompressed total of the last backup archive.'
+          tags:
+            - tag: borgmatic-target
+              value: this-archive
+            - tag: class
+              value: backup
+            - tag: target
+              value: borgmatic
+        - uuid: 75f88a88fb9b426d9cf71274795d3009
+          name: 'Last backup completion timestamp'
+          type: TRAP
+          key: borgmatic.last.backup.timestamp
+          history: 15d
+          trends: 30d
+          description: |
+            Completion timestamp of the last successful backup run.
+            
+            Format: Unix timestamp
+          tags:
+            - tag: borgmatic-target
+              value: this-archive
+            - tag: class
+              value: backup
+            - tag: target
+              value: borgmatic
+        - uuid: e5b166b3d8964d4d8f88165457eb741b
+          name: 'Total chunks'
+          type: TRAP
+          key: borgmatic.total.chunks
+          history: 15d
+          trends: 30d
+          description: 'Number of total chunks in the backup repository.'
+          tags:
+            - tag: borgmatic-target
+              value: all-archives
+            - tag: class
+              value: backup
+            - tag: target
+              value: borgmatic
+        - uuid: 8a143e4cf99c434ea28286c190b03c34
+          name: 'Compressed size'
+          type: TRAP
+          key: borgmatic.total.compressed_size
+          history: 15d
+          trends: 30d
+          description: 'Compressed size in bytes of the backup repository. This is the compressed total of all archives in the backup repository.'
+          tags:
+            - tag: borgmatic-target
+              value: all-archives
+            - tag: class
+              value: backup
+            - tag: target
+              value: borgmatic
+        - uuid: 898a82d7b80248b997632cb0ed61cf08
+          name: 'Original size'
+          type: TRAP
+          key: borgmatic.total.original_size
+          history: 15d
+          trends: 30d
+          description: 'Original size in bytes of the backup repository. This is the uncompressed total of all archives in the backup repository.'
+          tags:
+            - tag: borgmatic-target
+              value: all-archives
+            - tag: class
+              value: backup
+            - tag: target
+              value: borgmatic
+        - uuid: b6a4d1d0eb9c48598e3597acd11f81ea
+          name: 'Unique chunks'
+          type: TRAP
+          key: borgmatic.total.unique_chunks
+          history: 15d
+          trends: 30d
+          description: 'Number of unique chunks in the backup repository.'
+          tags:
+            - tag: borgmatic-target
+              value: all-archives
+            - tag: class
+              value: backup
+            - tag: target
+              value: borgmatic
+        - uuid: dbcfd038d55a41adb181fc685ff5e0ba
+          name: 'Deduplicated compressed size (disk utilization)'
+          type: TRAP
+          key: borgmatic.total.unique_compressed_size
+          history: 15d
+          trends: 30d
+          description: 'Deduplicated compressed size in bytes of the backup repository. This is the actual disk utilization of the backup repository.'
+          tags:
+            - tag: borgmatic-target
+              value: all-archives
+            - tag: class
+              value: backup
+            - tag: target
+              value: borgmatic
+        - uuid: b0d0687d9acc41f59625e08237487c6b
+          name: 'Deduplicated size'
+          type: TRAP
+          key: borgmatic.total.unique_size
+          history: 15d
+          trends: 30d
+          description: 'Deduplicated size in bytes of the backup repository. This is the size of the backup repository on disk before compression.'
+          tags:
+            - tag: borgmatic-target
+              value: all-archives
+            - tag: class
+              value: backup
+            - tag: target
+              value: borgmatic
+      tags:
+        - tag: class
+          value: backup
+        - tag: target
+          value: borgmatic
+      macros:
+        - macro: '{$BORGMATIC_LAST_BACKUP_MAX_AGE}'
+          value: '86400'
+          description: 'Max allowed age in seconds for successful backups (defaults to 1 day)'
