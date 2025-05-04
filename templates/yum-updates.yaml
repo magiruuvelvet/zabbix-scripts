@@ -16,6 +16,11 @@ zabbix_export:
           key: yum.packagestoupdate.count
           history: 15d
           trends: 30d
+          tags:
+            - tag: class
+              value: software
+            - tag: target
+              value: yum
           triggers:
             - uuid: 6f687e124d674e36954394ab6c22ab8b
               expression: 'last(/yum updates/yum.packagestoupdate.count)>0'
@@ -27,6 +32,13 @@ zabbix_export:
           key: yum.packagestoupdate.details
           history: 15d
           value_type: TEXT
+          tags:
+            - tag: class
+              value: software
+            - tag: target
+              value: yum
       tags:
         - tag: class
           value: software
+        - tag: target
+          value: yum
