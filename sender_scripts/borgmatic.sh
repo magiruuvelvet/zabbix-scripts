@@ -8,6 +8,9 @@
 #   - borgmatic.sh done
 # on_error:
 #   - borgmatic.sh fail
+#
+# manual statistic collection: (does not affect backup validity monitoring)
+# - borgmatic.sh collect
 
 export LANG=C
 export LANGUAGE=
@@ -62,6 +65,10 @@ case "$BORG_ACTION" in
         ;;
     fail)
         ZBX_STREAM+="- borgmatic.last.backup.complete 0\n"
+        ;;
+    collect)
+        # extract and append latest repository statistics for graph building
+        extract_borg_stats
         ;;
 esac
 
