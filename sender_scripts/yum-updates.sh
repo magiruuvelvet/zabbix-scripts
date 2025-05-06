@@ -17,9 +17,14 @@ else
   YUM_UPDATES_COUNT="$(printf "%s_" "${YUM_UPDATES_DETAILS}" | grep -c "^")"
 fi
 
+# send the timestamp of the last update check for reliability monitoring
+# get informed immediately when update checks stop working
+YUM_STATS_TIMESTAMP="$(date -u +%s)"
+
 # build the stream for zabbix sender
 ZBX_STREAM=""
 ZBX_STREAM+="- yum.packagestoupdate.count ${YUM_UPDATES_COUNT}\n"
 ZBX_STREAM+="- yum.packagestoupdate.details \"$(echo "${YUM_UPDATES_DETAILS}" | tr "\n" " " | xargs)\"\n"
+ZBX_STREAM+="- yum.stats.timestamp.last_update_check ${YUM_STATS_TIMESTAMP}\n"
 
 echo -en "${ZBX_STREAM}" | zabbix_sender -c "/etc/zabbix/zabbix_agent2.conf" -i -
