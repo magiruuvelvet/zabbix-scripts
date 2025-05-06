@@ -25,7 +25,11 @@ zabbix_export:
             - uuid: 6f687e124d674e36954394ab6c22ab8b
               expression: 'last(/yum updates/yum.packagestoupdate.count)>0'
               name: 'Updates available'
+              opdata: '{ITEM.VALUE} packages need updating'
               priority: WARNING
+              tags:
+                - tag: scope
+                  value: security
         - uuid: 6b4f5969f1d1416098adc9beef3565fb
           name: 'Packages to update (details)'
           type: TRAP
@@ -37,8 +41,50 @@ zabbix_export:
               value: software
             - tag: target
               value: yum
+        - uuid: 1ee9515d3580416eb50381fa43f1a91e
+          name: 'Last update check timestamp'
+          type: TRAP
+          key: yum.stats.timestamp.last_update_check
+          history: 15d
+          trends: 30d
+          description: 'Timestamp when the last update check was received.'
+          tags:
+            - tag: class
+              value: software
+            - tag: target
+              value: yum
+        - uuid: f09e14da8beb40eaa4098751e0035a3a
+          name: 'Last update check age'
+          type: CALCULATED
+          key: yum.stats.timestamp.last_update_check_age
+          delay: 10m
+          history: 15d
+          trends: 30d
+          params: now()-last(//yum.stats.timestamp.last_update_check)
+          description: |
+            Age of the last successful update check in seconds.
+            
+            This calculated item periodically updates the last update check age to ensure reliable trigger execution, even when the host fails to send data entirely.
+          tags:
+            - tag: class
+              value: software
+            - tag: target
+              value: yum
+          triggers:
+            - uuid: 9cb29de6e81c4c46ae91bc2582aa8843
+              expression: 'last(/yum updates/yum.stats.timestamp.last_update_check_age) > {$YUM_LAST_UPDATE_CHECK_MAX_AGE}'
+              name: 'Last update check is older than allowed age'
+              opdata: 'No successful update check received in the last {$YUM_LAST_UPDATE_CHECK_MAX_AGE} seconds. Please check your server logs.'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: security
       tags:
         - tag: class
           value: software
         - tag: target
           value: yum
+      macros:
+        - macro: '{$YUM_LAST_UPDATE_CHECK_MAX_AGE}'
+          value: '45000'
+          description: 'Max allowed age in seconds for successful update checks (defaults to 12.5 hours)'
