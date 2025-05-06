@@ -63,8 +63,13 @@ zabbix_export:
             - uuid: 146a8e5804f34f87b10db34eff4a0920
               expression: 'last(/borgmatic/borgmatic.last.backup.age) > {$BORGMATIC_LAST_BACKUP_MAX_AGE}'
               name: 'Last backup is older than allowed age'
+              opdata: 'No successful backup completed in the last {$LAST_BACKUP_MAX_AGE} seconds. Please check your borgmatic and server logs.'
               priority: HIGH
-              description: 'No successful backup completed in the last {$LAST_BACKUP_MAX_AGE} seconds. Please check your borgmatic and server logs.'
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: notice
         - uuid: 45988226b4584ea081c6e096d2e794c0
           name: 'Last backup completion status'
           type: TRAP
@@ -86,8 +91,13 @@ zabbix_export:
             - uuid: 4b1f5540f0424eb3a68cf027cd820279
               expression: last(/borgmatic/borgmatic.last.backup.complete)=0
               name: 'Last backup run failed'
+              opdata: 'Last backup run failed with errors. Please check your borgmatic and server logs.'
               priority: HIGH
-              description: 'Last backup run failed with errors. Please check your borgmatic and server logs.'
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: notice
         - uuid: 2e7922f3360048bc8b05814204ecc65b
           name: 'Last backup compressed size'
           type: TRAP
