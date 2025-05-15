@@ -848,6 +848,25 @@ zabbix_export:
                   value: notice
                 - tag: sla-id
                   value: nextcloud
+        - uuid: cff4b7286e0340dcbf205d1dad1de2fe
+          name: 'Update available version'
+          type: DEPENDENT
+          key: nextcloud.serverinfo.system.update.available_version
+          value_type: TEXT
+          description: 'Available Nextcloud version.'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.ocs.data.nextcloud.system.update.available_version
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: nextcloud.serverinfo.get_data
+          tags:
+            - tag: component
+              value: application
         - uuid: c4939cb87ff8495784e3937c4bc7e34d
           name: Version
           type: DEPENDENT
