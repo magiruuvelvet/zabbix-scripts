@@ -47,6 +47,7 @@ zabbix_export:
           key: yum.stats.timestamp.last_update_check
           history: 15d
           trends: 30d
+          units: unixtime
           description: 'Timestamp when the last update check was received.'
           tags:
             - tag: class
@@ -60,6 +61,7 @@ zabbix_export:
           delay: 10m
           history: 15d
           trends: 30d
+          units: s
           params: now()-last(//yum.stats.timestamp.last_update_check)
           description: |
             Age of the last successful update check in seconds.
