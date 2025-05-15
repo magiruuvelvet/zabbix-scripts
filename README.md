@@ -15,9 +15,15 @@ One-shot updates that are sent to Zabbix for monitoring. Reduces technical depth
 **General dependencies:**
 - zabbix_sender
 
-### - borgmatic
+<details>
+<summary>Templates</summary>
+
+### borgmatic
 
 Checks backup status and collects repository statistics.
+
+<details>
+<summary>borgmatic</summary>
 
 **Dependencies:**
 - borgmatic
@@ -30,11 +36,20 @@ Checks backup status and collects repository statistics.
 
 If borgmatic doesn't run or otherwise fails to execute the script, you will still receive a trigger warning when the max allowed backup age is exceeded. This works by having an item of type `CALCULATED` that updates periodically. Run the script at least once with the `done` argument to populate the item values.
 
-### - YUM Updates
+</details>
+
+### YUM Updates
 
 Checks for available updates using `yum check-update`. Never miss out on important updates. Ideal when you have many servers that require regular maintenance and updates.
+
+<details>
+<summary>YUM Updates</summary>
 
 **Dependencies:**
 - yum
 
 **Usage:** Install as cron job with your preferred schedule.
+
+</details>
+
+</details>
