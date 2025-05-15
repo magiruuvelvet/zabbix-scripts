@@ -16,6 +16,7 @@ zabbix_export:
           key: borgmatic.last.action.timestamp
           history: 15d
           trends: 30d
+          units: unixtime
           description: |
             Execution time of the last performed action.
             
@@ -47,6 +48,7 @@ zabbix_export:
           delay: 10m
           history: 15d
           trends: 30d
+          units: s
           params: now()-last(//borgmatic.last.backup.timestamp)
           description: |
             Age of the last successful backup in seconds.
@@ -104,6 +106,7 @@ zabbix_export:
           key: borgmatic.last.backup.compressed_size
           history: 15d
           trends: 30d
+          units: B
           description: 'Compressed size in bytes of the last backup. This is the compressed total of the last backup archive.'
           tags:
             - tag: borgmatic-target
@@ -118,6 +121,7 @@ zabbix_export:
           key: borgmatic.last.backup.deduplicated_size
           history: 15d
           trends: 30d
+          units: B
           description: 'Deduplicated size in bytes of the last backup. This is the deduplicated total of the last backup archive.'
           tags:
             - tag: borgmatic-target
@@ -133,6 +137,7 @@ zabbix_export:
           history: 15d
           value_type: FLOAT
           trends: 30d
+          units: s
           description: 'Duration of the last backup run in seconds.'
           tags:
             - tag: borgmatic-target
@@ -161,6 +166,7 @@ zabbix_export:
           key: borgmatic.last.backup.original_size
           history: 15d
           trends: 30d
+          units: B
           description: 'Original size in bytes of the last backup. This is the uncompressed total of the last backup archive.'
           tags:
             - tag: borgmatic-target
@@ -175,6 +181,7 @@ zabbix_export:
           key: borgmatic.last.backup.timestamp
           history: 15d
           trends: 30d
+          units: unixtime
           description: |
             Completion timestamp of the last successful backup run.
             
@@ -206,6 +213,7 @@ zabbix_export:
           key: borgmatic.total.compressed_size
           history: 15d
           trends: 30d
+          units: B
           description: 'Compressed size in bytes of the backup repository. This is the compressed total of all archives in the backup repository.'
           tags:
             - tag: borgmatic-target
@@ -220,6 +228,7 @@ zabbix_export:
           key: borgmatic.total.original_size
           history: 15d
           trends: 30d
+          units: B
           description: 'Original size in bytes of the backup repository. This is the uncompressed total of all archives in the backup repository.'
           tags:
             - tag: borgmatic-target
@@ -248,6 +257,7 @@ zabbix_export:
           key: borgmatic.total.unique_compressed_size
           history: 15d
           trends: 30d
+          units: B
           description: 'Deduplicated compressed size in bytes of the backup repository. This is the actual disk utilization of the backup repository.'
           tags:
             - tag: borgmatic-target
@@ -262,6 +272,7 @@ zabbix_export:
           key: borgmatic.total.unique_size
           history: 15d
           trends: 30d
+          units: B
           description: 'Deduplicated size in bytes of the backup repository. This is the size of the backup repository on disk before compression.'
           tags:
             - tag: borgmatic-target
