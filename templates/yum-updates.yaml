@@ -30,6 +30,8 @@ zabbix_export:
               tags:
                 - tag: scope
                   value: security
+                - tag: sla-id
+                  value: security-packages
         - uuid: 6b4f5969f1d1416098adc9beef3565fb
           name: 'Packages to update (details)'
           type: TRAP
@@ -81,6 +83,8 @@ zabbix_export:
               tags:
                 - tag: scope
                   value: security
+                - tag: sla-id
+                  value: security-packages
       tags:
         - tag: class
           value: software
