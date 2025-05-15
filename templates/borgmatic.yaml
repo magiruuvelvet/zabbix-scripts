@@ -72,6 +72,8 @@ zabbix_export:
                   value: availability
                 - tag: scope
                   value: notice
+                - tag: sla-id
+                  value: backups
         - uuid: 45988226b4584ea081c6e096d2e794c0
           name: 'Last backup completion status'
           type: TRAP
@@ -100,6 +102,8 @@ zabbix_export:
                   value: availability
                 - tag: scope
                   value: notice
+                - tag: sla-id
+                  value: backups
         - uuid: 2e7922f3360048bc8b05814204ecc65b
           name: 'Last backup compressed size'
           type: TRAP
