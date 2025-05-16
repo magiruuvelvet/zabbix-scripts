@@ -2,6 +2,14 @@
 
 All scripts require a proper configuration of `/etc/zabbix/zabbix_agent2.conf` to function.
 
+## Zabbix agent
+
+### -----\[ check mountpoint \]-----
+
+Checks if the given directory is a mount point or not.
+
+**Usage:** `directory.is_mountpoint[/path/to/mount]`
+
 ## Zabbix trapper
 
 One-shot updates that are sent to Zabbix for monitoring. Reduces technical depth and improves performance for tasks that don't require periodic checks. Ideal for small and weak Zabbix servers to keep the monthly cost down.
