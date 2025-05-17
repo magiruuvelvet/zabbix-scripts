@@ -858,7 +858,7 @@ zabbix_export:
             - type: JSONPATH
               parameters:
                 - $.ocs.data.nextcloud.system.update.available_version
-              error_handler: DISCARD_VALUE
+              error_handler: CUSTOM_VALUE
             - type: DISCARD_UNCHANGED_HEARTBEAT
               parameters:
                 - 1h
