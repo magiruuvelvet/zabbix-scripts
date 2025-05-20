@@ -61,3 +61,14 @@ The built-in template wants you to configure an admin account with full read-wri
 - Disabled some redundant items that clash with OS templates to avoid double monitoring.
 
 ## Custom templates
+
+### -----\[ Vaultwarden ]\-----
+
+Minimal Vaultwarden health check template with release monitoring.
+
+**Macros:**
+- `{$VAULTWARDEN.URL}`: The absolute URL to the Vaultwarden server. Must be reachable from the Zabbix server/proxy that hosts this template.
+- `{$VAULTWARDEN.ALIVE_MAX_AGE}`: Max allowed age in seconds for successful alive heartbeats.
+
+**Notes:**
+- Uses the GitHub API to monitor releases.

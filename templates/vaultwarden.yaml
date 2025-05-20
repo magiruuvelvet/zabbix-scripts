@@ -1,0 +1,156 @@
+zabbix_export:
+  version: '7.2'
+  template_groups:
+    - uuid: a571c0d144b14fd4a87a9d9b2aa9fcd6
+      name: Templates/Applications
+  templates:
+    - uuid: 328d6ba68fab4e918b8798e55d036907
+      template: Vaultwarden
+      name: Vaultwarden
+      groups:
+        - name: Templates/Applications
+      items:
+        - uuid: 63103541ce9c4c12aa9f59b55ce05884
+          name: 'Vaultwarden: Fetch latest release'
+          type: HTTP_AGENT
+          key: vaultwarden.data.fetch_latest_release
+          delay: 12h
+          history: '0'
+          value_type: TEXT
+          url: 'https://api.github.com/repos/dani-garcia/vaultwarden/releases/latest'
+          follow_redirects: 'NO'
+          headers:
+            - name: User-Agent
+              value: Zabbix
+          tags:
+            - tag: component
+              value: system
+        - uuid: 3912838437704f42890f11dd67c99dd3
+          name: 'Vaultwarden: Fetch latest release status'
+          type: DEPENDENT
+          key: vaultwarden.data.fetch_latest_release.status
+          history: '0'
+          trends: '0'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.id
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: vaultwarden.data.fetch_latest_release
+          tags:
+            - tag: component
+              value: system
+          triggers:
+            - uuid: 20aef51d194d4ebf835fef54ed33e928
+              expression: last(/Vaultwarden/vaultwarden.data.fetch_latest_release.status)=0
+              name: 'Vaultwarden: Failed to fetch release data'
+              priority: WARNING
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: sla-id
+                  value: vaultwarden
+        - uuid: ce98a1798afc45078e0bf9416a625567
+          name: 'Vaultwarden: Alive timestamp'
+          type: HTTP_AGENT
+          key: vaultwarden.health.alive_timestamp
+          delay: 10m
+          history: 30d
+          trends: 30d
+          units: unixtime
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - |
+                  try {
+                      return Math.round(Date.parse(JSON.parse(value)) / 1000, 0);
+                  } catch (e) {
+                      return 0;
+                  }
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          url: '{$VAULTWARDEN.URL}/alive'
+          follow_redirects: 'NO'
+          verify_peer: 'YES'
+          verify_host: 'YES'
+          tags:
+            - tag: component
+              value: environment
+          triggers:
+            - uuid: 0af7dd85b601479da36572523d23b379
+              expression: last(/Vaultwarden/vaultwarden.health.alive_timestamp)=0
+              name: 'Vaultwarden: Health check failed'
+              priority: HIGH
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: sla-id
+                  value: vaultwarden
+        - uuid: 34043bbdbd5b47bab71c7963cba1764f
+          name: 'Vaultwarden: Alive timestamp age'
+          type: CALCULATED
+          key: vaultwarden.health.alive_timestamp.age
+          delay: 10m
+          history: 30d
+          trends: 30d
+          units: s
+          params: now()-last(//vaultwarden.health.alive_timestamp)
+          tags:
+            - tag: component
+              value: environment
+          triggers:
+            - uuid: b600ae97ece64fd28e99fef82b2bf0df
+              expression: 'last(/Vaultwarden/vaultwarden.health.alive_timestamp.age)>{$VAULTWARDEN.ALIVE_MAX_AGE}'
+              name: 'Vaultwarden: Alive heartbeat too old'
+              opdata: 'No successful alive heartbeat received in the last {$VAULTWARDEN.ALIVE_MAX_AGE} seconds.'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: sla-id
+                  value: vaultwarden
+        - uuid: e6dafcc011d24e95a9f24a88bcae5eb7
+          name: 'Vaultwarden: Latest release'
+          type: DEPENDENT
+          key: vaultwarden.version.latest
+          history: 30d
+          value_type: TEXT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.tag_name
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: vaultwarden.data.fetch_latest_release
+          tags:
+            - tag: component
+              value: environment
+          triggers:
+            - uuid: 44bf722cd3844f99ab8cfce3205a2733
+              expression: change(/Vaultwarden/vaultwarden.version.latest)=1
+              name: 'Vaultwarden: New version released'
+              opdata: 'New version: {ITEM.LASTVALUE}'
+              priority: WARNING
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: sla-id
+                  value: vaultwarden
+      tags:
+        - tag: class
+          value: application
+        - tag: target
+          value: vaultwarden
+      macros:
+        - macro: '{$VAULTWARDEN.ALIVE_MAX_AGE}'
+          value: '1200'
+          description: 'Max allowed age in seconds since the last alive timestamp.'
+        - macro: '{$VAULTWARDEN.URL}'
+          value: '<SET THIS>'
+          description: 'URL of the Vaultwarden server.'
