@@ -29,7 +29,7 @@ zabbix_export:
           name: 'Vaultwarden: Fetch latest release status'
           type: DEPENDENT
           key: vaultwarden.data.fetch_latest_release.status
-          history: '0'
+          history: 1d
           trends: '0'
           preprocessing:
             - type: JSONPATH
