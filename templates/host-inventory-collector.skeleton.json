@@ -1,0 +1,58 @@
+/*
+ * Skeleton for the static host inventory collector.
+ * 1. Configure and save to: "/etc/zabbix/host-inventory.json"
+ * 2. Remove all comments.
+ */
+{
+  "hostname": "",
+  "os": {
+    // uname
+    "name": "Linux/FreeBSD/OpenBSD/etc.",
+    // cat /etc/os-release
+    "release_id": "gentoo/rocky/etc.",
+    "release_version_id": "2.xx/9.x/etc.",
+    "release_name": "Gentoo/Rocky Linux/etc.",
+    "release_pretty_name": "Gentoo Linux/Rocky Linux 9.x/etc."
+  },
+  "cpu": {
+    // lscpu
+    "vendor": "AuthenticAMD/GenuineIntel/etc.",
+    "model": "AMD Ryzen .../Intel(R) Xeon(R) .../etc.",
+    "architecture": "x86_64",
+    "cores": 8,
+    "threads": 16,
+    "freq_min": 400,
+    "freq_max": 6080
+  },
+  "mem": {
+    "total": 99620446208
+  },
+  "virt": {
+    "is_virtualized": false,
+    "environment": "none"
+  },
+  "chassis": {
+    "vendor": "TUXEDO/Supermicro/QEMU/etc."
+  },
+  // the contents of this JSON object (without the custom_user_data key) can also be stored in
+  // >> "/etc/zabbix/host-inventory.user.json"
+  // when using an automatic collector script
+  "custom_user_data": {
+    // example server data, useful to keep track of hardware or VPS scale/type
+    "server": {
+      "provider": "Scaleway",
+      "type": "Dedibox",
+      "model": "Start-2-L"
+    },
+    // software primarily hosted on this server (or worth mentioning)
+    "software": {
+      "summary": "",
+      "details": ""
+    },
+    // physical location of the server
+    "location": {
+      "country": "France",
+      "city": "Paris"
+    }
+  }
+}

@@ -1,0 +1,515 @@
+zabbix_export:
+  version: '7.2'
+  template_groups:
+    - uuid: 4469114c82f544f480f6ff09259542cc
+      name: Inventory
+  templates:
+    - uuid: 3fe603e416394287979f1187de3a478c
+      template: 'Auto inventory via Zabbix agent active'
+      name: 'Auto inventory via Zabbix agent active'
+      description: 'Automatically populates host inventory fields via Zabbix agent active.'
+      groups:
+        - name: Inventory
+      items:
+        - uuid: 43ed57946c6b403d877dc952379d1738
+          name: 'Inventory: Chassis vendor'
+          type: DEPENDENT
+          key: inventory.chassis.vendor
+          value_type: CHAR
+          inventory_link: CHASSIS
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.chassis.vendor
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 8d5715a8b9d449e1b39a240787de8250
+          name: 'Inventory: CPU architecture'
+          type: DEPENDENT
+          key: inventory.cpu.architecture
+          value_type: CHAR
+          inventory_link: HW_ARCH
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.cpu.architecture
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: b69b2878fe1844a9ad67e816f0e6010a
+          name: 'Inventory: CPU cores'
+          type: DEPENDENT
+          key: inventory.cpu.cores
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.cpu.cores
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 5c207dfe4cd3455897ebf2789a0675e6
+          name: 'Inventory: CPU frequency max'
+          type: DEPENDENT
+          key: inventory.cpu.freq_max
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.cpu.freq_max
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: d36b5baaad02442389c4d95d20654857
+          name: 'Inventory: CPU frequency min'
+          type: DEPENDENT
+          key: inventory.cpu.freq_min
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.cpu.freq_min
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 474b726a788f4853858289f276599480
+          name: 'Inventory: CPU model'
+          type: DEPENDENT
+          key: inventory.cpu.model
+          value_type: CHAR
+          inventory_link: MODEL
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.cpu.model
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 4fad9db639234bbeaa525c3351225181
+          name: 'Inventory: CPU threads'
+          type: DEPENDENT
+          key: inventory.cpu.threads
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.cpu.threads
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 7dca7ef379b042d5ab42115eea022fa0
+          name: 'Inventory: CPU vendor'
+          type: DEPENDENT
+          key: inventory.cpu.vendor
+          value_type: CHAR
+          inventory_link: VENDOR
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.cpu.vendor
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 7cfacaec1f9846278bf50764fa9cab76
+          name: 'Inventory: Hostname'
+          type: DEPENDENT
+          key: inventory.hostname
+          value_type: CHAR
+          inventory_link: NAME
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.hostname
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 81ad3eb9b7684a6b92790b95371a41f0
+          name: 'Inventory: Total system memory'
+          type: DEPENDENT
+          key: inventory.mem.total
+          units: B
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.mem.total
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 361aeb745d614276845b60afb589b9eb
+          name: 'Inventory: OS name'
+          type: DEPENDENT
+          key: inventory.os.name
+          value_type: CHAR
+          inventory_link: OS_SHORT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.os.name
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 0715b7904cf74629ba9741932cd229fe
+          name: 'Inventory: OS release ID'
+          type: DEPENDENT
+          key: inventory.os.release_id
+          value_type: CHAR
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.os.release_id
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: b06b02b63082495d8f0e64216c36a1ee
+          name: 'Inventory: OS release name'
+          type: DEPENDENT
+          key: inventory.os.release_name
+          value_type: CHAR
+          inventory_link: OS
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.os.release_name
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: d3d0ea5dd85e405cad8fd59b4a337c0f
+          name: 'Inventory: OS release pretty name'
+          type: DEPENDENT
+          key: inventory.os.release_pretty_name
+          value_type: CHAR
+          inventory_link: OS_FULL
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.os.release_pretty_name
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 573987779ad348d4828ac018c53c4c35
+          name: 'Inventory: OS release version ID'
+          type: DEPENDENT
+          key: inventory.os.release_version_id
+          value_type: CHAR
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.os.release_version_id
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: d5efda6542fa4c258eb00460ad25b7b8
+          name: 'Inventory: Type'
+          type: CALCULATED
+          key: inventory.type
+          delay: 1d
+          value_type: CHAR
+          params: last(//inventory.virt.is_virtualized)
+          inventory_link: TYPE
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - 'return value == 0 ? "Bare metal server" : "VPS";'
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: ed1e19d0543c4c05b18acf55c025b56e
+          name: 'Inventory: Type details'
+          type: CALCULATED
+          key: inventory.type.details
+          delay: 1d
+          value_type: CHAR
+          params: 'concat(last(//inventory.user_data.server.provider)," ",last(//inventory.user_data.server.type)," ",last(//inventory.user_data.server.model))'
+          inventory_link: TYPE_FULL
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 9abc8809080f4771b703ee169bf5e0af
+          name: 'Inventory: Location city'
+          type: DEPENDENT
+          key: inventory.uesr_data.location.city
+          value_type: CHAR
+          inventory_link: SITE_CITY
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.custom_user_data.location.city
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 93374a52d6dc43c3abd7f2128ff2b7d6
+          name: 'Inventory: Location country'
+          type: DEPENDENT
+          key: inventory.user_data.location.country
+          value_type: CHAR
+          inventory_link: SITE_COUNTRY
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.custom_user_data.location.country
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 915deeb038ca44dabae7a823ca35eab3
+          name: 'Inventory: Server model'
+          type: DEPENDENT
+          key: inventory.user_data.server.model
+          value_type: CHAR
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.custom_user_data.server.model
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 24c02bc685684c2ba9c0bfbce39790bf
+          name: 'Inventory: Server provider'
+          type: DEPENDENT
+          key: inventory.user_data.server.provider
+          value_type: CHAR
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.custom_user_data.server.provider
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: e64f086fa13a48cbaaeac96dce2a517b
+          name: 'Inventory: Server type'
+          type: DEPENDENT
+          key: inventory.user_data.server.type
+          value_type: CHAR
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.custom_user_data.server.type
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 12c6bb2271f741dd8f116431d438739e
+          name: 'Inventory: Software details'
+          type: DEPENDENT
+          key: inventory.user_data.software.details
+          value_type: TEXT
+          inventory_link: SOFTWARE_FULL
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.custom_user_data.software.details
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 3e16d90d5d654af7af83f5a360369df9
+          name: 'Inventory: Software summary'
+          type: DEPENDENT
+          key: inventory.user_data.software.summary
+          value_type: CHAR
+          inventory_link: SOFTWARE
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.custom_user_data.software.summary
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 76607bc5024248ff982f2f77ea972cb5
+          name: 'Inventory: Virtualization environment'
+          type: DEPENDENT
+          key: inventory.virt.environment
+          value_type: CHAR
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.virt.environment
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: c0587c3de5ea41b6bd74ba98ef01e8e9
+          name: 'Inventory: Virtualization status'
+          type: DEPENDENT
+          key: inventory.virt.is_virtualized
+          valuemap:
+            name: Boolean
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.virt.is_virtualized
+              error_handler: DISCARD_VALUE
+            - type: BOOL_TO_DECIMAL
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: inventory.zabbix-agent.collect
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 24b28b0aa1ef49da9277a38bf2f1e687
+          name: 'Collect host inventory data'
+          type: ZABBIX_ACTIVE
+          key: inventory.zabbix-agent.collect
+          delay: 1d
+          history: 1d
+          value_type: TEXT
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            - tag: component
+              value: inventory
+      tags:
+        - tag: class
+          value: inventory
+        - tag: collector
+          value: zabbix-agent-active
+      valuemaps:
+        - uuid: bf72bdd5504c4e799e934fd6db65c304
+          name: Boolean
+          mappings:
+            - value: '0'
+              newvalue: 'false'
+            - value: '1'
+              newvalue: 'true'
