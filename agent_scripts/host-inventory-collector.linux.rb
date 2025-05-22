@@ -62,7 +62,7 @@ end
 #
 # @return [Hash]
 def get_virtualization_status
-  virt_status = `systemd-detect-virt`.strip
+  virt_status = `systemd-detect-virt --vm`.strip
 
   return {
     is_virtualized: virt_status != "none",
