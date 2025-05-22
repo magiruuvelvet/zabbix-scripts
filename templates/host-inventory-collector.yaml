@@ -100,6 +100,21 @@ zabbix_export:
           tags:
             - tag: component
               value: inventory
+        - uuid: ddcf52bbb978458c845962d1c5469d58
+          name: 'Inventory: CPU hyperthreading'
+          type: CALCULATED
+          key: inventory.cpu.hyperthreading
+          delay: 1d
+          params: last(//inventory.cpu.cores)<>last(//inventory.cpu.threads)
+          valuemap:
+            name: Boolean
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            - tag: component
+              value: inventory
         - uuid: 474b726a788f4853858289f276599480
           name: 'Inventory: CPU model'
           type: DEPENDENT
@@ -285,6 +300,13 @@ zabbix_export:
           tags:
             - tag: component
               value: inventory
+          triggers:
+            - uuid: 848f3474e3384aedbba88f19b6c9b3da
+              expression: 'last(/Auto inventory via Zabbix agent active/inventory.os.release_version_id,#1)<>last(/Auto inventory via Zabbix agent active/inventory.os.release_version_id,#2)'
+              name: 'Inventory: OS release version ID has changed'
+              opdata: '"{ITEM.LASTVALUE2}" -> "{ITEM.LASTVALUE1}"'
+              priority: INFO
+              manual_close: 'YES'
         - uuid: d5efda6542fa4c258eb00460ad25b7b8
           name: 'Inventory: Type'
           type: CALCULATED
@@ -312,6 +334,9 @@ zabbix_export:
           params: 'concat(last(//inventory.user_data.server.provider)," ",last(//inventory.user_data.server.type)," ",last(//inventory.user_data.server.model))'
           inventory_link: TYPE_FULL
           preprocessing:
+            - type: RTRIM
+              parameters:
+                - ' '
             - type: DISCARD_UNCHANGED_HEARTBEAT
               parameters:
                 - 1h
@@ -321,7 +346,7 @@ zabbix_export:
         - uuid: 9abc8809080f4771b703ee169bf5e0af
           name: 'Inventory: Location city'
           type: DEPENDENT
-          key: inventory.uesr_data.location.city
+          key: inventory.user_data.location.city
           value_type: CHAR
           inventory_link: SITE_CITY
           preprocessing:
@@ -374,6 +399,13 @@ zabbix_export:
           tags:
             - tag: component
               value: inventory
+          triggers:
+            - uuid: c32efd485750427c871e244b9649b346
+              expression: 'last(/Auto inventory via Zabbix agent active/inventory.user_data.server.model,#1)<>last(/Auto inventory via Zabbix agent active/inventory.user_data.server.model,#2)'
+              name: 'Inventory: Server model has changed'
+              opdata: '"{ITEM.LASTVALUE2}" -> "{ITEM.LASTVALUE1}"'
+              priority: INFO
+              description: 'Only relevant for VPS when you are rescaling the server, and you have automated the `host-inventory.user.json` file.'
         - uuid: 24c02bc685684c2ba9c0bfbce39790bf
           name: 'Inventory: Server provider'
           type: DEPENDENT
@@ -429,6 +461,13 @@ zabbix_export:
           tags:
             - tag: component
               value: inventory
+          triggers:
+            - uuid: 250750c3d6904d2493d87f1fea36de18
+              expression: 'last(/Auto inventory via Zabbix agent active/inventory.user_data.software.details,#1)<>last(/Auto inventory via Zabbix agent active/inventory.user_data.software.details,#2)'
+              name: 'Inventory: Software details has changed'
+              opdata: '"{ITEM.LASTVALUE2}" -> "{ITEM.LASTVALUE1}"'
+              priority: INFO
+              manual_close: 'YES'
         - uuid: 3e16d90d5d654af7af83f5a360369df9
           name: 'Inventory: Software summary'
           type: DEPENDENT
@@ -448,6 +487,13 @@ zabbix_export:
           tags:
             - tag: component
               value: inventory
+          triggers:
+            - uuid: 53ffaf7445214c3bae96469f6561d17d
+              expression: 'last(/Auto inventory via Zabbix agent active/inventory.user_data.software.summary,#1)<>last(/Auto inventory via Zabbix agent active/inventory.user_data.software.summary,#2)'
+              name: 'Inventory: Software summary has changed'
+              opdata: '"{ITEM.LASTVALUE2}" -> "{ITEM.LASTVALUE1}"'
+              priority: INFO
+              manual_close: 'YES'
         - uuid: 76607bc5024248ff982f2f77ea972cb5
           name: 'Inventory: Virtualization environment'
           type: DEPENDENT
