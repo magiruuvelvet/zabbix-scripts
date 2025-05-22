@@ -313,12 +313,33 @@ zabbix_export:
           key: inventory.type
           delay: 1d
           value_type: CHAR
-          params: last(//inventory.virt.is_virtualized)
+          params: last(//inventory.virt.environment)
           inventory_link: TYPE
           preprocessing:
             - type: JAVASCRIPT
               parameters:
-                - 'return value == 0 ? "Bare metal server" : "VPS";'
+                - |
+                  if (value == "none") {
+                      return "Bare metal machine";
+                  } else if (value == "") {
+                      return "Unknown machine type";
+                  } else if (value == "qemu") {
+                      return "QEMU guest";
+                  } else if (value == "kvm") {
+                      return "KVM/QEMU guest";
+                  } else if (value == "vmware") {
+                      return "VMware guest";
+                  } else if (value == "microsoft") {
+                      return "Hyper-V guest";
+                  } else if (value == "oracle") {
+                      return "VirtualBox guest";
+                  } else if (value == "xen") {
+                      return "Xen guest";
+                  } else if (value == "bhyve") {
+                      return "bhyve guest";
+                  } else {
+                      return value + " guest";
+                  }
             - type: DISCARD_UNCHANGED_HEARTBEAT
               parameters:
                 - 1h
