@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 # Linux system information collector.
+# Works with Ruby 2.5+ and 3.x - some enterprise LTS distributions are stuck on Ruby 2.5 with security patches.
 
 require "json"
 require "ostruct"
