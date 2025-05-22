@@ -11,11 +11,11 @@ zabbix_export:
         - name: 'Templates/Backup solutions'
       items:
         - uuid: ac11849d34a947a1997c02ab41ac53ad
-          name: 'Last action timestamp'
+          name: 'borgmatic: Last action timestamp'
           type: TRAP
           key: borgmatic.last.action.timestamp
-          history: 15d
-          trends: 30d
+          history: 7d
+          trends: 21d
           units: unixtime
           description: |
             Execution time of the last performed action.
@@ -27,10 +27,10 @@ zabbix_export:
             - tag: target
               value: borgmatic
         - uuid: 36433c4003a24e68823a642843c2ac13
-          name: 'Last action type'
+          name: 'borgmatic: Last action type'
           type: TRAP
           key: borgmatic.last.action.type
-          history: 15d
+          history: 7d
           value_type: TEXT
           description: |
             Type of the last performed action.
@@ -42,12 +42,12 @@ zabbix_export:
             - tag: target
               value: borgmatic
         - uuid: 162e2a3194484b3e92ece83abf516e33
-          name: 'Last backup age'
+          name: 'borgmatic: Last backup age'
           type: CALCULATED
           key: borgmatic.last.backup.age
           delay: 10m
-          history: 15d
-          trends: 30d
+          history: 21d
+          trends: 90d
           units: s
           params: now()-last(//borgmatic.last.backup.timestamp)
           description: |
@@ -64,7 +64,7 @@ zabbix_export:
           triggers:
             - uuid: 146a8e5804f34f87b10db34eff4a0920
               expression: 'last(/borgmatic/borgmatic.last.backup.age) > {$BORGMATIC_LAST_BACKUP_MAX_AGE}'
-              name: 'Last backup is older than allowed age'
+              name: 'borgmatic: Last backup is older than allowed age'
               opdata: 'No successful backup completed in the last {$LAST_BACKUP_MAX_AGE} seconds. Please check your borgmatic and server logs.'
               priority: HIGH
               tags:
@@ -75,11 +75,11 @@ zabbix_export:
                 - tag: sla-id
                   value: backups
         - uuid: 45988226b4584ea081c6e096d2e794c0
-          name: 'Last backup completion status'
+          name: 'borgmatic: Last backup completion status'
           type: TRAP
           key: borgmatic.last.backup.complete
-          history: 15d
-          trends: 30d
+          history: 21d
+          trends: 90d
           description: |
             Completion status of the last backup run as boolean.
             
@@ -94,7 +94,7 @@ zabbix_export:
           triggers:
             - uuid: 4b1f5540f0424eb3a68cf027cd820279
               expression: last(/borgmatic/borgmatic.last.backup.complete)=0
-              name: 'Last backup run failed'
+              name: 'borgmatic: Last backup run failed'
               opdata: 'Last backup run failed with errors. Please check your borgmatic and server logs.'
               priority: HIGH
               tags:
@@ -105,11 +105,11 @@ zabbix_export:
                 - tag: sla-id
                   value: backups
         - uuid: 2e7922f3360048bc8b05814204ecc65b
-          name: 'Last backup compressed size'
+          name: 'borgmatic: Last backup compressed size'
           type: TRAP
           key: borgmatic.last.backup.compressed_size
-          history: 15d
-          trends: 30d
+          history: 21d
+          trends: 90d
           units: B
           description: 'Compressed size in bytes of the last backup. This is the compressed total of the last backup archive.'
           tags:
@@ -120,11 +120,11 @@ zabbix_export:
             - tag: target
               value: borgmatic
         - uuid: d47215fc3b154310a2165956c63450ed
-          name: 'Last backup deduplicated size'
+          name: 'borgmatic: Last backup deduplicated size'
           type: TRAP
           key: borgmatic.last.backup.deduplicated_size
-          history: 15d
-          trends: 30d
+          history: 21d
+          trends: 90d
           units: B
           description: 'Deduplicated size in bytes of the last backup. This is the deduplicated total of the last backup archive.'
           tags:
@@ -135,12 +135,12 @@ zabbix_export:
             - tag: target
               value: borgmatic
         - uuid: 163577a0df94447e97c425c769c62ca1
-          name: 'Last backup duration'
+          name: 'borgmatic: Last backup duration'
           type: TRAP
           key: borgmatic.last.backup.duration
-          history: 15d
+          history: 21d
           value_type: FLOAT
-          trends: 30d
+          trends: 90d
           units: s
           description: 'Duration of the last backup run in seconds.'
           tags:
@@ -151,11 +151,11 @@ zabbix_export:
             - tag: target
               value: borgmatic
         - uuid: 10f46b7521814fa6898a4a1c6e871582
-          name: 'Last backup total files'
+          name: 'borgmatic: Last backup total files'
           type: TRAP
           key: borgmatic.last.backup.files
-          history: 15d
-          trends: 30d
+          history: 21d
+          trends: 90d
           description: 'Number of total files stored in the last backup.'
           tags:
             - tag: borgmatic-target
@@ -165,11 +165,11 @@ zabbix_export:
             - tag: target
               value: borgmatic
         - uuid: eee1a46f3ce9490597bc4069f0df7c49
-          name: 'Last backup original size'
+          name: 'borgmatic: Last backup original size'
           type: TRAP
           key: borgmatic.last.backup.original_size
-          history: 15d
-          trends: 30d
+          history: 21d
+          trends: 90d
           units: B
           description: 'Original size in bytes of the last backup. This is the uncompressed total of the last backup archive.'
           tags:
@@ -180,11 +180,11 @@ zabbix_export:
             - tag: target
               value: borgmatic
         - uuid: 75f88a88fb9b426d9cf71274795d3009
-          name: 'Last backup completion timestamp'
+          name: 'borgmatic: Last backup completion timestamp'
           type: TRAP
           key: borgmatic.last.backup.timestamp
-          history: 15d
-          trends: 30d
+          history: 21d
+          trends: 90d
           units: unixtime
           description: |
             Completion timestamp of the last successful backup run.
@@ -198,11 +198,11 @@ zabbix_export:
             - tag: target
               value: borgmatic
         - uuid: e5b166b3d8964d4d8f88165457eb741b
-          name: 'Total chunks'
+          name: 'borgmatic: Total chunks'
           type: TRAP
           key: borgmatic.total.chunks
-          history: 15d
-          trends: 30d
+          history: 21d
+          trends: 90d
           description: 'Number of total chunks in the backup repository.'
           tags:
             - tag: borgmatic-target
@@ -212,11 +212,11 @@ zabbix_export:
             - tag: target
               value: borgmatic
         - uuid: 8a143e4cf99c434ea28286c190b03c34
-          name: 'Compressed size'
+          name: 'borgmatic: Compressed size'
           type: TRAP
           key: borgmatic.total.compressed_size
-          history: 15d
-          trends: 30d
+          history: 21d
+          trends: 90d
           units: B
           description: 'Compressed size in bytes of the backup repository. This is the compressed total of all archives in the backup repository.'
           tags:
@@ -227,11 +227,11 @@ zabbix_export:
             - tag: target
               value: borgmatic
         - uuid: 898a82d7b80248b997632cb0ed61cf08
-          name: 'Original size'
+          name: 'borgmatic: Original size'
           type: TRAP
           key: borgmatic.total.original_size
-          history: 15d
-          trends: 30d
+          history: 21d
+          trends: 90d
           units: B
           description: 'Original size in bytes of the backup repository. This is the uncompressed total of all archives in the backup repository.'
           tags:
@@ -242,11 +242,11 @@ zabbix_export:
             - tag: target
               value: borgmatic
         - uuid: b6a4d1d0eb9c48598e3597acd11f81ea
-          name: 'Unique chunks'
+          name: 'borgmatic: Unique chunks'
           type: TRAP
           key: borgmatic.total.unique_chunks
-          history: 15d
-          trends: 30d
+          history: 21d
+          trends: 90d
           description: 'Number of unique chunks in the backup repository.'
           tags:
             - tag: borgmatic-target
@@ -256,11 +256,11 @@ zabbix_export:
             - tag: target
               value: borgmatic
         - uuid: dbcfd038d55a41adb181fc685ff5e0ba
-          name: 'Deduplicated compressed size (disk utilization)'
+          name: 'borgmatic: Deduplicated compressed size (disk utilization)'
           type: TRAP
           key: borgmatic.total.unique_compressed_size
-          history: 15d
-          trends: 30d
+          history: 21d
+          trends: 90d
           units: B
           description: 'Deduplicated compressed size in bytes of the backup repository. This is the actual disk utilization of the backup repository.'
           tags:
@@ -271,11 +271,11 @@ zabbix_export:
             - tag: target
               value: borgmatic
         - uuid: b0d0687d9acc41f59625e08237487c6b
-          name: 'Deduplicated size'
+          name: 'borgmatic: Deduplicated size'
           type: TRAP
           key: borgmatic.total.unique_size
-          history: 15d
-          trends: 30d
+          history: 21d
+          trends: 90d
           units: B
           description: 'Deduplicated size in bytes of the backup repository. This is the size of the backup repository on disk before compression.'
           tags:
