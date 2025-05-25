@@ -82,9 +82,9 @@ Examples of poor update checker mechanisms:
 
 Minimal Vaultwarden health check template with release monitoring.
 
+> [!Note]
+> To monitor releases and get update alerts add the **GitHub Release Monitor** template to your host and add `dani-garcia/vaultwarden` to the repository list macro.
+
 **Macros:**
 - `{$VAULTWARDEN.URL}`: The absolute URL to the Vaultwarden server. Must be reachable from the Zabbix server/proxy that hosts this template.
 - `{$VAULTWARDEN.ALIVE_MAX_AGE}`: Max allowed age in seconds for successful alive heartbeats.
-
-**Notes:**
-- Uses the GitHub API to monitor releases.
