@@ -1,0 +1,240 @@
+zabbix_export:
+  version: '7.2'
+  template_groups:
+    - uuid: 764b6e678f72454b859598f3b437e108
+      name: Templates/Miscellaneous
+  templates:
+    - uuid: e100215104a14af9b0f286f6c247d766
+      template: 'Git Release Monitor'
+      name: 'Git Release Monitor'
+      description: |
+        Monitors Git repositories for new latest stable releases.
+        
+        To add repositories for monitoring populate the {$GIT_RELEASE_MONITOR.*.REPO_LIST} macros with a comma-separated list of repositories (username/repo-name) and wait for the LLD rule to execute.
+      groups:
+        - name: Templates/Miscellaneous
+      discovery_rules:
+        - uuid: 70fa2600ef4c4bd595a628173f223881
+          name: 'Codeberg: Discover repositories'
+          type: SCRIPT
+          key: git_release_monitor.codeberg.discovery
+          delay: 1h
+          params: |
+            const repos = "{$GIT_RELEASE_MONITOR.CODEBERG.REPO_LIST}".split(",").map(function(repo) {
+                return {repository: repo};
+            });
+            
+            return JSON.stringify(repos);
+          enabled_lifetime_type: DISABLE_AFTER
+          enabled_lifetime: 1d
+          item_prototypes:
+            - uuid: f1655b98daf34238a45e645206c58360
+              name: 'Codeberg: {#CODEBERG_REPOSITORY}: Fetch latest release status'
+              type: DEPENDENT
+              key: 'git_release_monitor.codeberg.fetch.status[{#CODEBERG_REPOSITORY}]'
+              history: 1d
+              trends: '0'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.[0].id'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              master_item:
+                key: 'git_release_monitor.codeberg.fetch[{#CODEBERG_REPOSITORY}]'
+              tags:
+                - tag: git-release-monitor-provider
+                  value: codeberg
+                - tag: git-release-monitor-repository
+                  value: '{#CODEBERG_REPOSITORY}'
+              trigger_prototypes:
+                - uuid: cd17e105f4bb419e976db8b3138fd6de
+                  expression: 'last(/Git Release Monitor/git_release_monitor.codeberg.fetch.status[{#CODEBERG_REPOSITORY}])=0'
+                  name: 'Codeberg: {#CODEBERG_REPOSITORY}: Failed to fetch release data'
+                  priority: WARNING
+                  tags:
+                    - tag: git-release-monitor-provider
+                      value: codeberg
+                    - tag: git-release-monitor-repository
+                      value: '{#CODEBERG_REPOSITORY}'
+                    - tag: scope
+                      value: availability
+            - uuid: 73ca00756d244806be9e462dab6dda8f
+              name: 'Codeberg: {#CODEBERG_REPOSITORY}: Fetch latest release'
+              type: HTTP_AGENT
+              key: 'git_release_monitor.codeberg.fetch[{#CODEBERG_REPOSITORY}]'
+              delay: 1d
+              history: '0'
+              value_type: TEXT
+              url: 'https://codeberg.org/api/v1/repos/{#CODEBERG_REPOSITORY}/releases?draft=false&pre-release=false&limit=1'
+              follow_redirects: 'NO'
+              headers:
+                - name: User-Agent
+                  value: Zabbix
+              tags:
+                - tag: git-release-monitor-provider
+                  value: codeberg
+                - tag: git-release-monitor-repository
+                  value: '{#CODEBERG_REPOSITORY}'
+            - uuid: 4fc9d037435148bc872d51619e7071d3
+              name: 'Codeberg: {#CODEBERG_REPOSITORY}: Latest release'
+              type: DEPENDENT
+              key: 'git_release_monitor.codeberg.version.latest[{#CODEBERG_REPOSITORY}]'
+              history: 30d
+              value_type: TEXT
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.[0].tag_name'
+                  error_handler: DISCARD_VALUE
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              master_item:
+                key: 'git_release_monitor.codeberg.fetch[{#CODEBERG_REPOSITORY}]'
+              tags:
+                - tag: git-release-monitor-provider
+                  value: codeberg
+                - tag: git-release-monitor-repository
+                  value: '{#CODEBERG_REPOSITORY}'
+              trigger_prototypes:
+                - uuid: fbc3359698a14df1a041d4a578a5b454
+                  expression: 'change(/Git Release Monitor/git_release_monitor.codeberg.version.latest[{#CODEBERG_REPOSITORY}])=1'
+                  name: 'Codeberg: {#CODEBERG_REPOSITORY}: New version released'
+                  opdata: 'New version: {ITEM.LASTVALUE}'
+                  priority: INFO
+                  tags:
+                    - tag: git-release-monitor-provider
+                      value: codeberg
+                    - tag: git-release-monitor-repository
+                      value: '{#CODEBERG_REPOSITORY}'
+                    - tag: scope
+                      value: availability
+          lld_macro_paths:
+            - lld_macro: '{#CODEBERG_REPOSITORY}'
+              path: $..repository.first()
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+        - uuid: f9c7e778c3e8409ea231ccdff162eb96
+          name: 'GitHub: Discover repositories'
+          type: SCRIPT
+          key: git_release_monitor.github.discovery
+          delay: 1h
+          params: |
+            const repos = "{$GIT_RELEASE_MONITOR.GITHUB.REPO_LIST}".split(",").map(function(repo) {
+                return {repository: repo};
+            });
+            
+            return JSON.stringify(repos);
+          enabled_lifetime_type: DISABLE_AFTER
+          enabled_lifetime: 1d
+          item_prototypes:
+            - uuid: 011bd6de09db4440a83ec1b4e6a2de3d
+              name: 'GitHub: {#GITHUB_REPOSITORY}: Fetch latest release status'
+              type: DEPENDENT
+              key: 'git_release_monitor.github.fetch.status[{#GITHUB_REPOSITORY}]'
+              history: 1d
+              trends: '0'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - $.id
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              master_item:
+                key: 'git_release_monitor.github.fetch[{#GITHUB_REPOSITORY}]'
+              tags:
+                - tag: git-release-monitor-provider
+                  value: github
+                - tag: git-release-monitor-repository
+                  value: '{#GITHUB_REPOSITORY}'
+              trigger_prototypes:
+                - uuid: 48e94209e6184eadb754a7ec370a9c93
+                  expression: 'last(/Git Release Monitor/git_release_monitor.github.fetch.status[{#GITHUB_REPOSITORY}])=0'
+                  name: 'GitHub: {#GITHUB_REPOSITORY}: Failed to fetch release data'
+                  priority: WARNING
+                  tags:
+                    - tag: git-release-monitor-provider
+                      value: github
+                    - tag: git-release-monitor-repository
+                      value: '{#GITHUB_REPOSITORY}'
+                    - tag: scope
+                      value: availability
+            - uuid: fef36e1a82474408b5778e5a8a0b2d18
+              name: 'GitHub: {#GITHUB_REPOSITORY}: Fetch latest release'
+              type: HTTP_AGENT
+              key: 'git_release_monitor.github.fetch[{#GITHUB_REPOSITORY}]'
+              delay: 12h
+              history: '0'
+              value_type: TEXT
+              url: 'https://api.github.com/repos/{#GITHUB_REPOSITORY}/releases/latest'
+              follow_redirects: 'NO'
+              headers:
+                - name: User-Agent
+                  value: Zabbix
+              tags:
+                - tag: git-release-monitor-provider
+                  value: github
+                - tag: git-release-monitor-repository
+                  value: '{#GITHUB_REPOSITORY}'
+            - uuid: 4ef5c0e8076c41ef9a8f5a74e69ad01d
+              name: 'GitHub: {#GITHUB_REPOSITORY}: Latest release'
+              type: DEPENDENT
+              key: 'git_release_monitor.github.version.latest[{#GITHUB_REPOSITORY}]'
+              history: 30d
+              value_type: TEXT
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - $.tag_name
+                  error_handler: DISCARD_VALUE
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              master_item:
+                key: 'git_release_monitor.github.fetch[{#GITHUB_REPOSITORY}]'
+              tags:
+                - tag: git-release-monitor-provider
+                  value: github
+                - tag: git-release-monitor-repository
+                  value: '{#GITHUB_REPOSITORY}'
+              trigger_prototypes:
+                - uuid: 105af2d403c145568763a8914cb5a4e9
+                  expression: 'change(/Git Release Monitor/git_release_monitor.github.version.latest[{#GITHUB_REPOSITORY}])=1'
+                  name: 'GitHub: {#GITHUB_REPOSITORY}: New version released'
+                  opdata: 'New version: {ITEM.LASTVALUE}'
+                  priority: INFO
+                  tags:
+                    - tag: git-release-monitor-provider
+                      value: github
+                    - tag: git-release-monitor-repository
+                      value: '{#GITHUB_REPOSITORY}'
+                    - tag: scope
+                      value: availability
+          lld_macro_paths:
+            - lld_macro: '{#GITHUB_REPOSITORY}'
+              path: $..repository.first()
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+      tags:
+        - tag: class
+          value: application
+        - tag: target
+          value: git
+        - tag: target
+          value: repository
+      macros:
+        - macro: '{$GIT_RELEASE_MONITOR.CODEBERG.REPO_LIST}'
+          description: 'Comma-separated list of Codeberg repositories (username/repo-name) to monitor.'
+        - macro: '{$GIT_RELEASE_MONITOR.GITHUB.REPO_LIST}'
+          description: 'Comma-separated list of GitHub repositories (username/repo-name) to monitor.'

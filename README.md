@@ -62,28 +62,32 @@ The built-in template wants you to configure an admin account with full read-wri
 
 ## Custom templates
 
-### -----\[ GitHub Release Monitor ]\-----
+### -----\[ Git Release Monitor ]\-----
 
-Monitors GitHub repositories for new latest stable releases.
+Monitors Git repositories for new latest stable releases.
 
-Useful for applications that either don't have any update checker mechanism built-in or the update checker mechanism is poorly implemented. This monitoring approach depends on upstream doing proper GitHub release maintenance.
+Useful for applications that either don't have any update checker mechanism built-in or the update checker mechanism is poorly implemented. This monitoring approach depends on upstream doing proper application release maintenance (not repository tags).
 
 Examples of poor update checker mechanisms:
 - API: can't be reached from a JSON or XML API because the developer wants you to access the update page in the web browser, or uses a custom built-in notification system.
 - ACL: requires privileged admin tokens with full read-write system access because the application lacks token scopes or other access mechanisms with minimal read-only permissions. extremely common in personal single-user applications.
 
+**Supported Providers:**
+- GitHub (Macro: `GITHUB`)
+- Codeberg (Macro: `CODEBERG`)
+
 **Macros:**
-- `{$GITHUB_RELEASE_MONITOR.REPO_LIST}`: Comma-separated list of repositories (username/repo-name) to monitor.
+- `{$GIT_RELEASE_MONITOR.*.REPO_LIST}`: Comma-separated list of repositories (username/repo-name) to monitor.
 
 **Notes:**
-- Uses the GitHub API to monitor releases.
+- Uses the API of the corresponding provider to monitor releases.
 
 ### -----\[ Vaultwarden ]\-----
 
 Minimal Vaultwarden health check template with release monitoring.
 
 > [!Note]
-> To monitor releases and get update alerts add the **GitHub Release Monitor** template to your host and add `dani-garcia/vaultwarden` to the repository list macro.
+> To monitor releases and get update alerts add the **Git Release Monitor** template to your host and add `dani-garcia/vaultwarden` to the GitHub repository list macro.
 
 **Macros:**
 - `{$VAULTWARDEN.URL}`: The absolute URL to the Vaultwarden server. Must be reachable from the Zabbix server/proxy that hosts this template.
