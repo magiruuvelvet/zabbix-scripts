@@ -9,6 +9,9 @@ zabbix_export:
       name: Vaultwarden
       groups:
         - name: Templates/Applications
+      vendor:
+        name: magiruuvelvet
+        version: 1.1.0
       items:
         - uuid: ce98a1798afc45078e0bf9416a625567
           name: 'Vaultwarden: Alive timestamp'

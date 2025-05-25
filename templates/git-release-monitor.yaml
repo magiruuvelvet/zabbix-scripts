@@ -13,6 +13,9 @@ zabbix_export:
         To add repositories for monitoring populate the {$GIT_RELEASE_MONITOR.*.REPO_LIST} macros with a comma-separated list of repositories (username/repo-name) and wait for the LLD rule to execute.
       groups:
         - name: Templates/Miscellaneous
+      vendor:
+        name: magiruuvelvet
+        version: 1.0.0
       discovery_rules:
         - uuid: 70fa2600ef4c4bd595a628173f223881
           name: 'Codeberg: Discover repositories'

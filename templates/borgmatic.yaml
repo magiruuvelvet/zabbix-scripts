@@ -9,6 +9,9 @@ zabbix_export:
       name: borgmatic
       groups:
         - name: 'Templates/Backup solutions'
+      vendor:
+        name: magiruuvelvet
+        version: 1.0.0
       items:
         - uuid: ac11849d34a947a1997c02ab41ac53ad
           name: 'borgmatic: Last action timestamp'

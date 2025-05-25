@@ -9,6 +9,9 @@ zabbix_export:
       name: 'yum updates'
       groups:
         - name: 'Templates/Package manager'
+      vendor:
+        name: magiruuvelvet
+        version: 1.0.0
       items:
         - uuid: 826381c571ec47c8aec99d4eb3c329ba
           name: 'Packages to update'

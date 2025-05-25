@@ -10,6 +10,9 @@ zabbix_export:
       description: 'Automatically populates host inventory fields via Zabbix agent active.'
       groups:
         - name: Inventory
+      vendor:
+        name: magiruuvelvet
+        version: 0.0.3
       items:
         - uuid: 43ed57946c6b403d877dc952379d1738
           name: 'Inventory: Chassis vendor'
