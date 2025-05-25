@@ -62,6 +62,22 @@ The built-in template wants you to configure an admin account with full read-wri
 
 ## Custom templates
 
+### -----\[ GitHub Release Monitor ]\-----
+
+Monitors GitHub repositories for new latest stable releases.
+
+Useful for applications that either don't have any update checker mechanism built-in or the update checker mechanism is poorly implemented. This monitoring approach depends on upstream doing proper GitHub release maintenance.
+
+Examples of poor update checker mechanisms:
+- API: can't be reached from a JSON or XML API because the developer wants you to access the update page in the web browser, or uses a custom built-in notification system.
+- ACL: requires privileged admin tokens with full read-write system access because the application lacks token scopes or other access mechanisms with minimal read-only permissions. extremely common in personal single-user applications.
+
+**Macros:**
+- `{$GITHUB_RELEASE_MONITOR.REPO_LIST}`: Comma-separated list of repositories (username/repo-name) to monitor.
+
+**Notes:**
+- Uses the GitHub API to monitor releases.
+
 ### -----\[ Vaultwarden ]\-----
 
 Minimal Vaultwarden health check template with release monitoring.

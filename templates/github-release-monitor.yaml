@@ -1,0 +1,119 @@
+zabbix_export:
+  version: '7.2'
+  template_groups:
+    - uuid: 764b6e678f72454b859598f3b437e108
+      name: Templates/Miscellaneous
+  templates:
+    - uuid: e100215104a14af9b0f286f6c247d766
+      template: 'GitHub Release Monitor'
+      name: 'GitHub Release Monitor'
+      description: |
+        Monitors GitHub repositories for new latest stable releases.
+        
+        To add repositories for monitoring, populate the {$GITHUB_RELEASE_MONITOR.REPO_LIST} macro with a comma-separated list of repositories (username/repo-name) and wait for the LLD rule to execute.
+      groups:
+        - name: Templates/Miscellaneous
+      discovery_rules:
+        - uuid: f9c7e778c3e8409ea231ccdff162eb96
+          name: 'GitHub: Discover repositories'
+          type: SCRIPT
+          key: github_release_monitor.discovery
+          delay: 1h
+          params: |
+            const repos = "{$GITHUB_RELEASE_MONITOR.REPO_LIST}".split(",").map(function(repo) {
+                return {repository: repo};
+            });
+            
+            return JSON.stringify(repos);
+          enabled_lifetime_type: DISABLE_AFTER
+          enabled_lifetime: 1d
+          item_prototypes:
+            - uuid: 011bd6de09db4440a83ec1b4e6a2de3d
+              name: 'GitHub: {#GITHUB_REPOSITORY}: Fetch latest release status'
+              type: DEPENDENT
+              key: 'github_release_monitor.fetch.status[{#GITHUB_REPOSITORY}]'
+              history: 1d
+              trends: '0'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - $.id
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              master_item:
+                key: 'github_release_monitor.fetch[{#GITHUB_REPOSITORY}]'
+              tags:
+                - tag: github-release-monitor
+                  value: '{#GITHUB_REPOSITORY}'
+              trigger_prototypes:
+                - uuid: 48e94209e6184eadb754a7ec370a9c93
+                  expression: 'last(/GitHub Release Monitor/github_release_monitor.fetch.status[{#GITHUB_REPOSITORY}])=0'
+                  name: 'GitHub: {#GITHUB_REPOSITORY}: Failed to fetch release data'
+                  priority: WARNING
+                  tags:
+                    - tag: github-release-monitor
+                      value: '{#GITHUB_REPOSITORY}'
+                    - tag: scope
+                      value: availability
+            - uuid: fef36e1a82474408b5778e5a8a0b2d18
+              name: 'GitHub: {#GITHUB_REPOSITORY}: Fetch latest release'
+              type: HTTP_AGENT
+              key: 'github_release_monitor.fetch[{#GITHUB_REPOSITORY}]'
+              delay: 12h
+              history: '0'
+              value_type: TEXT
+              url: 'https://api.github.com/repos/{#GITHUB_REPOSITORY}/releases/latest'
+              follow_redirects: 'NO'
+              headers:
+                - name: User-Agent
+                  value: Zabbix
+              tags:
+                - tag: github-release-monitor
+                  value: '{#GITHUB_REPOSITORY}'
+            - uuid: 4ef5c0e8076c41ef9a8f5a74e69ad01d
+              name: 'GitHub: {#GITHUB_REPOSITORY}: Latest release'
+              type: DEPENDENT
+              key: 'github_release_monitor.version.latest[{#GITHUB_REPOSITORY}]'
+              history: 30d
+              value_type: TEXT
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - $.tag_name
+                  error_handler: DISCARD_VALUE
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              master_item:
+                key: 'github_release_monitor.fetch[{#GITHUB_REPOSITORY}]'
+              tags:
+                - tag: github-release-monitor
+                  value: '{#GITHUB_REPOSITORY}'
+              trigger_prototypes:
+                - uuid: 105af2d403c145568763a8914cb5a4e9
+                  expression: 'change(/GitHub Release Monitor/github_release_monitor.version.latest[{#GITHUB_REPOSITORY}])=1'
+                  name: 'GitHub: {#GITHUB_REPOSITORY}: New version released'
+                  opdata: 'New version: {ITEM.LASTVALUE}'
+                  priority: INFO
+                  tags:
+                    - tag: github-release-monitor
+                      value: '{#GITHUB_REPOSITORY}'
+                    - tag: scope
+                      value: availability
+          lld_macro_paths:
+            - lld_macro: '{#GITHUB_REPOSITORY}'
+              path: $..repository.first()
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+      tags:
+        - tag: class
+          value: application
+        - tag: target
+          value: github
+        - tag: target
+          value: repository
+      macros:
+        - macro: '{$GITHUB_RELEASE_MONITOR.REPO_LIST}'
+          description: 'Comma-separated list of repositories (username/repo-name) to monitor.'
