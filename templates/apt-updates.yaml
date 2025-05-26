@@ -1,0 +1,110 @@
+zabbix_export:
+  version: '7.2'
+  template_groups:
+    - uuid: 9ba2aec3c33c49cb810607531cc4892c
+      name: 'Templates/Package manager'
+  templates:
+    - uuid: 056d9deebd94463aabc2e060a5c56788
+      template: 'apt updates'
+      name: 'apt updates'
+      vendor:
+        name: magiruuvelvet
+        version: 0.9.0
+      groups:
+        - name: 'Templates/Package manager'
+      items:
+        - uuid: 25ce5c44e2274328bd3e2bb7efcc2783
+          name: 'Packages to update (security)'
+          type: TRAP
+          key: apt.packagestoupdate.count.security
+          history: 30d
+          trends: 90d
+          tags:
+            - tag: class
+              value: software
+            - tag: target
+              value: apt
+          triggers:
+            - uuid: cfc3ab6eeeaf42b3a20c91c122b8533b
+              expression: 'last(/apt updates/apt.packagestoupdate.count.security)>0'
+              name: 'Security updates available'
+              opdata: '{ITEM.VALUE} security updates are available'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: security
+                - tag: sla-id
+                  value: security-packages
+        - uuid: 759d5eb7333d4d4f8529a861b8def1e3
+          name: 'Packages to update (total)'
+          type: TRAP
+          key: apt.packagestoupdate.count.total
+          history: 30d
+          trends: 90d
+          tags:
+            - tag: class
+              value: software
+            - tag: target
+              value: apt
+          triggers:
+            - uuid: c0c3be31a34d4a789263861175a28942
+              expression: 'last(/apt updates/apt.packagestoupdate.count.total)>0'
+              name: 'Regular updates available'
+              opdata: '{ITEM.VALUE} regular updates are available'
+              priority: WARNING
+              tags:
+                - tag: scope
+                  value: security
+                - tag: sla-id
+                  value: security-packages
+        - uuid: 2078a0fbdbff405eaa0205524efc78d9
+          name: 'Last update check timestamp'
+          type: TRAP
+          key: apt.stats.timestamp.last_update_check
+          history: 30d
+          trends: 90d
+          units: unixtime
+          description: 'Timestamp when the last update check was received.'
+          tags:
+            - tag: class
+              value: software
+            - tag: target
+              value: apt
+        - uuid: be16404661aa42e880b73cd2256206e2
+          name: 'Last update check age'
+          type: CALCULATED
+          key: apt.stats.timestamp.last_update_check_age
+          delay: 10m
+          history: 30d
+          trends: 90d
+          units: s
+          params: now()-last(//apt.stats.timestamp.last_update_check)
+          description: |
+            Age of the last successful update check in seconds.
+            
+            This calculated item periodically updates the last update check age to ensure reliable trigger execution, even when the host fails to send data entirely.
+          tags:
+            - tag: class
+              value: software
+            - tag: target
+              value: apt
+          triggers:
+            - uuid: e168a24b73874edb89858c9acbf3f357
+              expression: 'last(/apt updates/apt.stats.timestamp.last_update_check_age) > {$APT_LAST_UPDATE_CHECK_MAX_AGE}'
+              name: 'Last update check is older than allowed age'
+              opdata: 'No successful update check received in the last {$APT_LAST_UPDATE_CHECK_MAX_AGE} seconds. Please check your server logs.'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: security
+                - tag: sla-id
+                  value: security-packages
+      tags:
+        - tag: class
+          value: software
+        - tag: target
+          value: apt
+      macros:
+        - macro: '{$APT_LAST_UPDATE_CHECK_MAX_AGE}'
+          value: '45000'
+          description: 'Max allowed age in seconds for successful update checks (defaults to 12.5 hours)'
