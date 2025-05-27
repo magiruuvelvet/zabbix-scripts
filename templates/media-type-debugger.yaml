@@ -1,0 +1,75 @@
+zabbix_export:
+  version: '7.2'
+  template_groups:
+    - uuid: c7e9267a72e74debbedc4741cc8c03be
+      name: 'Development and debugging'
+  templates:
+    - uuid: 5834925129eb42c7a2c035f96f80cb7b
+      template: 'Media type debugger'
+      name: 'Media type debugger'
+      description: 'Media type debugging template.'
+      groups:
+        - name: 'Development and debugging'
+      vendor:
+        name: magiruuvelvet
+        version: 1.0.0
+      items:
+        - uuid: 1f94c8fba232462882e364b75483e965
+          name: '/tmp/test file exists for testing'
+          key: 'vfs.file.exists[/tmp/test]'
+          history: 1h
+          trends: '0'
+          tags:
+            - tag: type
+              value: debug
+          triggers:
+            - uuid: 048474ba05d64339a93fe68f8ea5dad2
+              expression: 'last(/Media type debugger/vfs.file.exists[/tmp/test])=1'
+              name: '/tmp/test exists [Average]'
+              opdata: 'Last value: {ITEM.LASTVALUE}'
+              priority: AVERAGE
+              tags:
+                - tag: type
+                  value: debug
+            - uuid: 737ee4bdbb574eb187c7955aacad729e
+              expression: 'last(/Media type debugger/vfs.file.exists[/tmp/test])=1'
+              name: '/tmp/test exists [Disaster]'
+              opdata: 'Last value: {ITEM.LASTVALUE}'
+              priority: DISASTER
+              tags:
+                - tag: type
+                  value: debug
+            - uuid: 2916b66687564f84a554338f6bd501a0
+              expression: 'last(/Media type debugger/vfs.file.exists[/tmp/test])=1'
+              name: '/tmp/test exists [High]'
+              opdata: 'Last value: {ITEM.LASTVALUE}'
+              priority: HIGH
+              tags:
+                - tag: type
+                  value: debug
+            - uuid: 9fb3d398b94c4401b8e5a2e2aa37d6dc
+              expression: 'last(/Media type debugger/vfs.file.exists[/tmp/test])=1'
+              name: '/tmp/test exists [Information]'
+              opdata: 'Last value: {ITEM.LASTVALUE}'
+              priority: INFO
+              tags:
+                - tag: type
+                  value: debug
+            - uuid: 8c99a2cb6ed749f98ac04e50d3a2510c
+              expression: 'last(/Media type debugger/vfs.file.exists[/tmp/test])=1'
+              name: '/tmp/test exists [Not classified]'
+              opdata: 'Last value: {ITEM.LASTVALUE}'
+              tags:
+                - tag: type
+                  value: debug
+            - uuid: 0f71abef64c4479e85540efcd09465de
+              expression: 'last(/Media type debugger/vfs.file.exists[/tmp/test])=1'
+              name: '/tmp/test exists [Warning]'
+              opdata: 'Last value: {ITEM.LASTVALUE}'
+              priority: WARNING
+              tags:
+                - tag: type
+                  value: debug
+      tags:
+        - tag: type
+          value: debug
