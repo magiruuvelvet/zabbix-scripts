@@ -1,0 +1,207 @@
+zabbix_export:
+  version: '7.2'
+  media_types:
+    - name: 'Matrix (Webhook)'
+      type: WEBHOOK
+      parameters:
+        - name: event_ack_status
+          value: '{EVENT.ACK.STATUS}'
+        - name: event_age
+          value: '{EVENT.AGE}'
+        - name: event_date
+          value: '{EVENT.DATE}'
+        - name: event_duration
+          value: '{EVENT.DURATION}'
+        - name: event_id
+          value: '{EVENT.ID}'
+        - name: event_name
+          value: '{EVENT.NAME}'
+        - name: event_opdata
+          value: '{EVENT.OPDATA}'
+        - name: event_recovery_date
+          value: '{EVENT.RECOVERY.DATE}'
+        - name: event_recovery_time
+          value: '{EVENT.RECOVERY.TIME}'
+        - name: event_status
+          value: '{EVENT.STATUS}'
+        - name: event_time
+          value: '{EVENT.TIME}'
+        - name: event_update_action
+          value: '{EVENT.UPDATE.ACTION}'
+        - name: event_update_date
+          value: '{EVENT.UPDATE.DATE}'
+        - name: event_update_message
+          value: '{EVENT.UPDATE.MESSAGE}'
+        - name: event_update_time
+          value: '{EVENT.UPDATE.TIME}'
+        - name: hostname
+          value: '{HOST.NAME}'
+        - name: item_value
+          value: '{ITEM.VALUE}'
+        - name: message
+          value: '{ALERT.MESSAGE}'
+        - name: send_to
+          value: '{ALERT.SENDTO}'
+        - name: subject
+          value: '{ALERT.SUBJECT}'
+        - name: trigger_name
+          value: '{TRIGGER.NAME}'
+        - name: trigger_severity
+          value: '{TRIGGER.SEVERITY}'
+        - name: trigger_status
+          value: '{TRIGGER.STATUS}'
+        - name: trigger_url
+          value: '{TRIGGER.URL}'
+      max_sessions: '0'
+      script: |
+        // enhanced Matrix webhook with rich formatting
+        const user_params = JSON.parse(value);
+        const send_to = user_params.send_to.split(';');
+        const params = {
+            server_url: send_to[0],
+            room_id: send_to[1],
+            access_token: send_to[2],
+            subject: user_params.subject,
+            message: user_params.message,
+            trigger_severity: user_params.trigger_severity,
+            trigger_status: user_params.trigger_status,
+            trigger_name: user_params.trigger_name,
+            trigger_url: user_params.trigger_url,
+            hostname: user_params.hostname,
+            event_name: user_params.event_name,
+            event_status: user_params.event_status,
+            event_id: user_params.event_id,
+            event_date: user_params.event_date,
+            event_time: user_params.event_time,
+            event_recovery_date: user_params.event_recovery_date,
+            event_recovery_time: user_params.event_recovery_time,
+            event_duration: user_params.event_duration,
+            event_age: user_params.event_age,
+            event_opdata: user_params.event_opdata,
+            event_ack_status: user_params.event_ack_status,
+            event_update_action: user_params.event_update_action,
+            event_update_message: user_params.event_update_message,
+            event_update_date: user_params.event_update_date,
+            event_update_time: user_params.event_update_time,
+            item_value: user_params.item_value,
+        };
+        const apiUrl = params.server_url + '/_matrix/client/r0/rooms/' + encodeURIComponent(params.room_id) + '/send/m.room.message?access_token=' + params.access_token;
+        
+        var req = new HttpRequest();
+        req.addHeader('Content-Type: application/json');
+        
+        // severity color mapping
+        const severity_colors = {
+            'Not classified': '#97AAB3', // Not classified - Grey
+            'Information':    '#7499FF', // Information - Blue
+            'Warning':        '#FFC859', // Warning - Yellow
+            'Average':        '#FFA059', // Average - Orange
+            'High':           '#E97659', // High - Red
+            'Disaster':       '#E45959', // Disaster - Dark Red
+        };
+        
+        // severity emoji mapping
+        const severity_emoji = {
+            'Not classified': '❓',
+            'Information':    'ℹ️',
+            'Warning':        '⚠️',
+            'Average':        '🔶',
+            'High':           '🔥',
+            'Disaster':       '💥',
+        };
+        
+        function wrap_font(color, text) {
+            return '<font color="' + color + '">' + text + '</font>';
+        }
+        
+        function wrap_code(text) {
+            return '<code>' + text + '</code>';
+        }
+        
+        function get_emoji(severity) {
+            return wrap_font(severity_colors[severity], severity_emoji[severity]);
+        }
+        
+        const isRecovery = params.trigger_status === 'OK';
+        const isUpdate = params.event_update_action === '{EVENT.UPDATE.ACTION}' || params.event_update_action === '' ? false : true;
+        const emoji = isRecovery ? wrap_font('#5FB337', '✅') : get_emoji(params.trigger_severity);
+        const status = isRecovery ? wrap_font('#5FB337', 'RESOLVED') : wrap_font(severity_colors[params.trigger_severity], 'PROBLEM');
+        var extended_status = isRecovery ?
+            ' at ' + params.event_recovery_date + ' ' + params.event_recovery_time :
+            ' started at ' + params.event_date + ' ' + params.event_time;
+        
+        if (isUpdate) {
+            extended_status = ' ' + params.event_update_action + ' at ' + params.event_update_date + ' ' + params.event_update_time;
+        }
+        
+        var htmlMessage =
+            '<strong><code>' + emoji + '</code> ' + status + '</strong> ' + extended_status + ' (Event ID: ' + params.event_id + ')<br/>' +
+            '<strong>Host:</strong> ' + wrap_code(params.hostname) + '<br/>' +
+            '<strong>Problem:</strong> ' + wrap_code(params.event_name) + '<br/>' +
+            '<strong>Severity: ' + wrap_font(severity_colors[params.trigger_severity], params.trigger_severity) + '</strong><br/>';
+        
+        if (isUpdate) {
+            htmlMessage += '<strong>Event status:</strong> ' + params.event_status + '<br/>';
+            htmlMessage += '<strong>Event age:</strong> ' + params.event_age + '<br/>';
+            htmlMessage += '<strong>Event acknowledged:</strong> ' + params.event_ack_status + '<br/>';
+            htmlMessage += '<strong>Update message:</strong> ' + params.event_update_message + '<br/>';
+        }
+        
+        if (isRecovery) {
+            htmlMessage += '<strong>Original problem time:</strong> ' + params.event_date + ' ' + params.event_time + '<br/>';
+            htmlMessage += '<strong>Problem duration:</strong> ' + params.event_duration + '<br/>';
+        }
+        
+        if (params.item_value) {
+            htmlMessage += '<strong>Current value:</strong> ' + wrap_code(params.item_value) + '<br/>';
+        }
+        
+        if (params.event_opdata) {
+            htmlMessage += '<strong>Operational data:</strong> ' + wrap_code(params.event_opdata) + '<br/>';
+        }
+        
+        if (params.trigger_url) {
+            htmlMessage += '<strong>Details:</strong> ' + params.trigger_url + '<br/>';
+        }
+        
+        const payload = {
+            msgtype: 'm.text',
+            body: status + ': ' + params.event_name + ' on ' + params.hostname,
+            format: 'org.matrix.custom.html',
+            formatted_body: htmlMessage + '<br/>',
+        };
+        
+        const response = req.post(apiUrl, JSON.stringify(payload));
+        
+        if (req.getStatus() !== 200) {
+            throw Error('Matrix API error: HTTP ' + req.getStatus() + ' - ' + response);
+        }
+        
+        return 'OK';
+      process_tags: 'YES'
+      description: 'Format for {ALERT.SENDTO} parameter: "server_url;room_id;access_token" (without quotes)'
+      message_templates:
+        - event_source: TRIGGERS
+          operation_mode: PROBLEM
+          subject: '-'
+          message: '-'
+        - event_source: TRIGGERS
+          operation_mode: RECOVERY
+          subject: '-'
+          message: '-'
+        - event_source: TRIGGERS
+          operation_mode: UPDATE
+          subject: '-'
+          message: '-'
+        - event_source: SERVICE
+          operation_mode: PROBLEM
+          subject: '-'
+          message: '-'
+        - event_source: SERVICE
+          operation_mode: RECOVERY
+          subject: '-'
+          message: '-'
+        - event_source: SERVICE
+          operation_mode: UPDATE
+          subject: '-'
+          message: '-'
