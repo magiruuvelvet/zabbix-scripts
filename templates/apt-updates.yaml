@@ -9,10 +9,24 @@ zabbix_export:
       name: 'apt updates'
       vendor:
         name: magiruuvelvet
-        version: 0.9.0
+        version: 0.10.0
       groups:
         - name: 'Templates/Package manager'
       items:
+        - uuid: bceb2dfbb8d44a3b9ff21634db5b1e5d
+          name: 'Interval counter'
+          type: CALCULATED
+          key: apt.helper.inverval.counter
+          delay: 10m
+          history: 60d
+          trends: '0'
+          params: 'floor(now() / {$APT_SECURITY_REMIND_INTERVAL})'
+          description: 'Helper item to re-trigger the updates pending alert.'
+          tags:
+            - tag: class
+              value: software
+            - tag: target
+              value: apt
         - uuid: 25ce5c44e2274328bd3e2bb7efcc2783
           name: 'Packages to update (security)'
           type: TRAP
@@ -108,3 +122,19 @@ zabbix_export:
         - macro: '{$APT_LAST_UPDATE_CHECK_MAX_AGE}'
           value: '45000'
           description: 'Max allowed age in seconds for successful update checks (defaults to 12.5 hours)'
+        - macro: '{$APT_SECURITY_REMIND_INTERVAL}'
+          value: 7d
+          description: 'Remind about pending security updates every 7 days.'
+  triggers:
+    - uuid: 1775efade66b47aeb8ae40d621d5e0a0
+      expression: 'min(/apt updates/apt.packagestoupdate.count.security,{$APT_SECURITY_REMIND_INTERVAL})<>0 and change(/apt updates/apt.helper.inverval.counter)=1'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/apt updates/apt.packagestoupdate.count.security)=0'
+      name: 'Security updates pending'
+      opdata: '{ITEM.LASTVALUE1} security updates are pending'
+      priority: HIGH
+      tags:
+        - tag: scope
+          value: security
+        - tag: sla-id
+          value: security-packages
