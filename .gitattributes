@@ -1,0 +1,3 @@
+# include YAML in repo stats
+*.yaml linguist-detectable=true
+*.yaml linguist-language=YAML
