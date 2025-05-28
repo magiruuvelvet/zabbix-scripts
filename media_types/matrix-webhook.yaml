@@ -140,7 +140,7 @@ zabbix_export:
             '<strong>Severity: ' + wrap_font(severity_colors[params.trigger_severity], params.trigger_severity) + '</strong><br/>';
         
         if (isUpdate) {
-            const event_status = isRecovery ? wrap_font('#5FB337', params.event_status) : wrap_font(severity_colors[params.trigger_severity], params.event_status);
+            const event_status = isRecovery ? wrap_font('#5FB337', params.event_status) : wrap_font('#EB0D0D', params.event_status);
             htmlMessage += '<strong>Event status:</strong> ' + event_status + '<br/>';
             htmlMessage += '<strong>Event age:</strong> ' + params.event_age + '<br/>';
             htmlMessage += '<strong>Event acknowledged:</strong> ' + params.event_ack_status + '<br/>';
