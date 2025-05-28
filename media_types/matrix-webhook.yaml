@@ -36,8 +36,6 @@ zabbix_export:
           value: '{EVENT.UPDATE.TIME}'
         - name: hostname
           value: '{HOST.NAME}'
-        - name: item_value
-          value: '{ITEM.VALUE}'
         - name: message
           value: '{ALERT.MESSAGE}'
         - name: send_to
@@ -83,7 +81,6 @@ zabbix_export:
             event_update_message: user_params.event_update_message,
             event_update_date: user_params.event_update_date,
             event_update_time: user_params.event_update_time,
-            item_value: user_params.item_value,
         };
         const apiUrl = params.server_url + '/_matrix/client/r0/rooms/' + encodeURIComponent(params.room_id) + '/send/m.room.message?access_token=' + params.access_token;
         
@@ -124,13 +121,15 @@ zabbix_export:
         
         const isRecovery = params.trigger_status === 'OK';
         const isUpdate = params.event_update_action === '{EVENT.UPDATE.ACTION}' || params.event_update_action === '' ? false : true;
-        const emoji = isRecovery ? wrap_font('#5FB337', '✅') : get_emoji(params.trigger_severity);
-        const status = isRecovery ? wrap_font('#5FB337', 'RESOLVED') : wrap_font(severity_colors[params.trigger_severity], 'PROBLEM');
+        var emoji = isRecovery ? wrap_font('#5FB337', '✅') : get_emoji(params.trigger_severity);
+        var status = isRecovery ? wrap_font('#5FB337', 'RESOLVED') : wrap_font(severity_colors[params.trigger_severity], 'PROBLEM');
         var extended_status = isRecovery ?
             ' at ' + params.event_recovery_date + ' ' + params.event_recovery_time :
             ' started at ' + params.event_date + ' ' + params.event_time;
         
         if (isUpdate) {
+            emoji = get_emoji(params.trigger_severity);
+            status = wrap_font(severity_colors[params.trigger_severity], 'PROBLEM');
             extended_status = ' ' + params.event_update_action + ' at ' + params.event_update_date + ' ' + params.event_update_time;
         }
         
@@ -141,7 +140,8 @@ zabbix_export:
             '<strong>Severity: ' + wrap_font(severity_colors[params.trigger_severity], params.trigger_severity) + '</strong><br/>';
         
         if (isUpdate) {
-            htmlMessage += '<strong>Event status:</strong> ' + params.event_status + '<br/>';
+            const event_status = isRecovery ? wrap_font('#5FB337', params.event_status) : wrap_font(severity_colors[params.trigger_severity], params.event_status);
+            htmlMessage += '<strong>Event status:</strong> ' + event_status + '<br/>';
             htmlMessage += '<strong>Event age:</strong> ' + params.event_age + '<br/>';
             htmlMessage += '<strong>Event acknowledged:</strong> ' + params.event_ack_status + '<br/>';
             htmlMessage += '<strong>Update message:</strong> ' + params.event_update_message + '<br/>';
@@ -150,10 +150,6 @@ zabbix_export:
         if (isRecovery) {
             htmlMessage += '<strong>Original problem time:</strong> ' + params.event_date + ' ' + params.event_time + '<br/>';
             htmlMessage += '<strong>Problem duration:</strong> ' + params.event_duration + '<br/>';
-        }
-        
-        if (params.item_value) {
-            htmlMessage += '<strong>Current value:</strong> ' + wrap_code(params.item_value) + '<br/>';
         }
         
         if (params.event_opdata) {
