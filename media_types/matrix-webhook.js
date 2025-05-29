@@ -222,7 +222,7 @@ function handle_problem() {
         '' + status_plain + ' ' + extended_status + ' on "' + params.hostname + '": ' + params.event_name;
 
     if (is_update) {
-        const event_status = is_recovery ?
+        const event_status = params.trigger_status === 'OK' ?
             Matrix.wrap_font(Matrix.color_recovery, params.event_status) :
             Matrix.wrap_font(Matrix.color_problem, params.event_status);
         html_message += '<strong>Event status:</strong> ' + event_status + '<br/>';
