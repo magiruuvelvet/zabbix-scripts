@@ -13,7 +13,7 @@ zabbix_export:
         To add repositories for monitoring populate the {$GIT_RELEASE_MONITOR.*.REPO_LIST} macros with a comma-separated list of repositories (username/repo-name) and wait for the LLD rule to execute.
       vendor:
         name: magiruuvelvet
-        version: 1.0.1
+        version: 1.0.2
       groups:
         - name: Templates/Miscellaneous
       discovery_rules:
@@ -106,6 +106,7 @@ zabbix_export:
               trigger_prototypes:
                 - uuid: fbc3359698a14df1a041d4a578a5b454
                   expression: 'change(/Git Release Monitor/git_release_monitor.codeberg.version.latest[{#CODEBERG_REPOSITORY}])=1'
+                  recovery_mode: NONE
                   name: 'Codeberg: {#CODEBERG_REPOSITORY}: New version released'
                   opdata: 'New version: {ITEM.LASTVALUE}'
                   priority: INFO
@@ -213,6 +214,7 @@ zabbix_export:
               trigger_prototypes:
                 - uuid: 105af2d403c145568763a8914cb5a4e9
                   expression: 'change(/Git Release Monitor/git_release_monitor.github.version.latest[{#GITHUB_REPOSITORY}])=1'
+                  recovery_mode: NONE
                   name: 'GitHub: {#GITHUB_REPOSITORY}: New version released'
                   opdata: 'New version: {ITEM.LASTVALUE}'
                   priority: INFO
