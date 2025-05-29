@@ -1,0 +1,269 @@
+// enhanced Matrix webhook with rich formatting
+const Matrix = {
+    // severity color mapping
+    severity_colors: {
+        '': 'inherit',
+        'Not classified': '#97AAB3', // Not classified - Grey
+        'Information':    '#7499FF', // Information - Blue
+        'Warning':        '#FFC859', // Warning - Yellow
+        'Average':        '#FFA059', // Average - Orange
+        'High':           '#E97659', // High - Red
+        'Disaster':       '#E45959', // Disaster - Dark Red
+    },
+
+    // severity emoji mapping
+    severity_emoji: {
+        '': '',
+        'Not classified': '❓',
+        'Information':    'ℹ️',
+        'Warning':        '⚠️',
+        'Average':        '🔶',
+        'High':           '🔥',
+        'Disaster':       '💥',
+    },
+
+    // other colors
+    color_problem: '#EB0D0D',
+    color_recovery: '#5FB337',
+
+    // other emojis
+    emoji_recovery: '✅',
+
+    /**
+     * - 4: debug
+     * - 3: warning
+     * - 2: error
+     *
+     * @param {number} level
+     * @param {string} message
+     * @returns {string}
+     */
+    log: function(level, message) {
+        Zabbix.log(level, '[Matrix Webhook] ' + message);
+        return message;
+    },
+
+    /**
+     * Terminates webhook script.
+     *
+     * @param {number} level
+     * @param {string} message
+     * @throws {Error}
+     */
+    die: function(level, message) {
+        const msg = Matrix.log(level, message);
+        throw Error(msg);
+    },
+
+    /**
+     * Checks if the given macro value was resolved to a non-empty value.
+     *
+     * @param {string} macro_value resolved macro value
+     * @param {string} macro_placeholder macro placeholder `{MACRO}`
+     * @returns {boolean}
+     */
+    macro_has_value: function(macro_value, macro_placeholder) {
+        return macro_value !== macro_placeholder && macro_value !== '';
+    },
+
+    /**
+     * Parses the webhook input parameters and extracts the `{ALERT.SENDTO}` components.
+     *
+     * @param {object} value webhook input JSON
+     * @returns {object}
+     * @throws {Error}
+     */
+    parse_params: function(value) {
+        var params = JSON.parse(value);
+
+        // remove macro placeholder from the recipient configuration
+        if (!Matrix.macro_has_value(params.send_to, '{ALERT.SENDTO}')) {
+            params.send_to = "";
+        }
+
+        const send_to = params.send_to.split(';');
+        params.server_url = send_to[0] || "";
+        params.room_id = send_to[1] || "";
+        params.access_token = send_to[2] || "";
+        params.api_url = params.server_url + '/_matrix/client/r0/rooms/' + encodeURIComponent(params.room_id) + '/send/m.room.message?access_token=' + params.access_token;
+
+        // logs sensitive data when enabled (use with caution)
+        // Matrix.log(4, JSON.stringify(params));
+
+        if (params.server_url.length === 0 || params.room_id.length === 0 || params.access_token.length === 0) {
+            Matrix.die(2, 'Missing or incomplete recipient configuration: ' + JSON.stringify({
+                server_url: params.server_url,
+                room_id: params.room_id,
+                access_token_availability: params.access_token.length > 0 ? '[present]' : '[missing]',
+            }));
+        }
+
+        return params;
+    },
+
+    /**
+     * Posts a message to the configured Matrix recipient.
+     *
+     * @param {string} url
+     * @param {string} plaintext_message usually used in notifications depending on client
+     * @param {string} formatted_message formatted message seen in chat
+     * @returns {boolean}
+     * @throws {Error}
+     */
+    post_message: function(url, plaintext_message, formatted_message) {
+        var req = new HttpRequest();
+        req.addHeader('Content-Type: application/json');
+
+        const response = req.post(url, JSON.stringify({
+            msgtype: 'm.text',
+            body: plaintext_message,
+            format: 'org.matrix.custom.html',
+            formatted_body: formatted_message,
+        }));
+
+        if (req.getStatus() !== 200) {
+            Matrix.die(2, 'Matrix API error: HTTP ' + req.getStatus() + ' - ' + response);
+        }
+
+        return true;
+    },
+
+    /**
+     * @param {string} color
+     * @param {string} text
+     * @returns {string}
+     */
+    wrap_font: function(color, text) {
+        return '<font color="' + color + '">' + text + '</font>';
+    },
+
+    /**
+     * @param {string} text
+     * @returns {string}
+     */
+    wrap_code: function(text) {
+        return '<code>' + text + '</code>';
+    },
+
+    /**
+     * @param {string} severity
+     * @returns {string}
+     */
+    get_severity_emoji: function(severity) {
+        return Matrix.wrap_font(Matrix.severity_colors[severity], Matrix.severity_emoji[severity]);
+    },
+
+    /**
+     * @returns {string}
+     */
+    get_recovery_emoji: function() {
+        return Matrix.wrap_font(Matrix.color_recovery, Matrix.emoji_recovery);
+    },
+
+    /**
+     * @param {string} severity
+     * @returns {string}
+     */
+    get_formatted_problem_label: function(severity) {
+        return Matrix.wrap_font(Matrix.severity_colors[severity], 'PROBLEM');
+    },
+
+    /**
+     * @returns {string}
+     */
+    get_formatted_resolved_label: function() {
+        return Matrix.wrap_font(Matrix.color_recovery, 'RESOLVED');
+    },
+
+    /**
+     * @param {string} severity
+     * @returns {string}
+     */
+    get_formatted_severity: function(severity) {
+        return Matrix.wrap_font(Matrix.severity_colors[severity], severity);
+    },
+};
+
+const params = Matrix.parse_params(value);
+const is_problem = Matrix.macro_has_value(params.trigger_severity, '{TRIGGER.SEVERITY}');
+const is_service_problem = !is_problem; // services don't have a trigger severity
+
+function handle_problem() {
+    const is_recovery = params.trigger_status === 'OK';
+    const is_update = Matrix.macro_has_value(params.event_update_action, '{EVENT.UPDATE.ACTION}');
+
+    var emoji, status_plain, status_fmt, extended_status;
+
+    if (is_update) {
+        emoji = Matrix.wrap_code(Matrix.get_severity_emoji(params.trigger_severity));
+        status_plain = 'PROBLEM';
+        status_fmt = Matrix.get_formatted_problem_label(params.trigger_severity);
+        extended_status = params.event_update_action + ' at ' + params.event_update_date + ' ' + params.event_update_time;
+    } else if (is_recovery) {
+        emoji = Matrix.wrap_code(Matrix.get_recovery_emoji());
+        status_plain = 'RESOLVED';
+        status_fmt = Matrix.get_formatted_resolved_label();
+        extended_status = 'at ' + params.event_recovery_date + ' ' + params.event_recovery_time;
+    } else {
+        emoji = Matrix.wrap_code(Matrix.get_severity_emoji(params.trigger_severity));
+        status_plain = 'PROBLEM';
+        status_fmt = Matrix.get_formatted_problem_label(params.trigger_severity);
+        extended_status = 'started at ' + params.event_date + ' ' + params.event_time;
+    }
+
+    var html_message =
+        '<strong>' + emoji + ' ' + status_fmt + '</strong> ' + extended_status + ' (Event ID: ' + params.event_id + ')<br/>' +
+        '<strong>Host:</strong> ' + Matrix.wrap_code(params.hostname) + '<br/>' +
+        '<strong>Problem:</strong> ' + Matrix.wrap_code(params.event_name) + '<br/>' +
+        '<strong>Severity: ' + Matrix.get_formatted_severity(params.trigger_severity) + '</strong><br/>';
+    var plain_message =
+        '' + status_plain + ' ' + extended_status + ' on "' + params.hostname + '": ' + params.event_name;
+
+    if (is_update) {
+        const event_status = is_recovery ?
+            Matrix.wrap_font(Matrix.color_recovery, params.event_status) :
+            Matrix.wrap_font(Matrix.color_problem, params.event_status);
+        html_message += '<strong>Event status:</strong> ' + event_status + '<br/>';
+        html_message += '<strong>Event age:</strong> ' + params.event_age + '<br/>';
+        html_message += '<strong>Event acknowledged:</strong> ' + params.event_ack_status + '<br/>';
+        html_message += '<strong>Update message:</strong> ' + params.event_update_message + '<br/>';
+    }
+
+    if (is_recovery) {
+        html_message += '<strong>Original problem time:</strong> ' + params.event_date + ' ' + params.event_time + '<br/>';
+        html_message += '<strong>Problem duration:</strong> ' + params.event_duration + '<br/>';
+    }
+
+    if (Matrix.macro_has_value(params.event_opdata, '{EVENT.OPDATA}')) {
+        html_message += '<strong>Operational data:</strong> ' + Matrix.wrap_code(params.event_opdata) + '<br/>';
+    }
+
+    if (Matrix.macro_has_value(params.trigger_url, '{TRIGGER.URL}')) {
+        html_message += '<strong>Details:</strong> ' + params.trigger_url + '<br/>';
+    }
+
+    // Matrix.log(4, 'HTML: ' + html_message);
+    // Matrix.log(4, 'Plain: ' + plain_message);
+
+    Matrix.post_message(params.api_url, plain_message, html_message);
+}
+
+// TODO: handle service problems
+function handle_service_problem() {
+    const is_recovery = false;
+    const is_update = false;
+
+    var message = 'Service event occurred. Please check your Zabbix dashboard.';
+
+    Matrix.post_message(params.api_url, message, message);
+}
+
+if (is_problem) {
+    handle_problem();
+} else if (is_service_problem) {
+    handle_service_problem();
+} else {
+    Matrix.die(2, 'Unsupported event received.');
+}
+
+return 'OK';
