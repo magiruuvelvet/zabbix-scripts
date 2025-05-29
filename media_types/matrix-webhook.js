@@ -162,17 +162,19 @@ const Matrix = {
 
     /**
      * @param {string} severity
+     * @param {string} label
      * @returns {string}
      */
-    get_formatted_problem_label: function(severity) {
-        return Matrix.wrap_font(Matrix.severity_colors[severity], 'PROBLEM');
+    get_formatted_problem_label: function(severity, label) {
+        return Matrix.wrap_font(Matrix.severity_colors[severity], label);
     },
 
     /**
+     * @param {string} label
      * @returns {string}
      */
-    get_formatted_resolved_label: function() {
-        return Matrix.wrap_font(Matrix.color_recovery, 'RESOLVED');
+    get_formatted_resolved_label: function(label) {
+        return Matrix.wrap_font(Matrix.color_recovery, label);
     },
 
     /**
@@ -185,29 +187,29 @@ const Matrix = {
 };
 
 const params = Matrix.parse_params(value);
-const is_problem = Matrix.macro_has_value(params.trigger_severity, '{TRIGGER.SEVERITY}');
-const is_service_problem = !is_problem; // services don't have a trigger severity
+const is_problem = params.subject === 'problem';
+const is_service_problem = params.subject === 'service';
 
 function handle_problem() {
-    const is_recovery = params.trigger_status === 'OK';
-    const is_update = Matrix.macro_has_value(params.event_update_action, '{EVENT.UPDATE.ACTION}');
+    const is_recovery = params.message === 'problem_recovery';
+    const is_update = params.message === 'problem_update';
 
     var emoji, status_plain, status_fmt, extended_status;
 
     if (is_update) {
         emoji = Matrix.wrap_code(Matrix.get_severity_emoji(params.trigger_severity));
         status_plain = 'PROBLEM';
-        status_fmt = Matrix.get_formatted_problem_label(params.trigger_severity);
+        status_fmt = Matrix.get_formatted_problem_label(params.trigger_severity, status_plain);
         extended_status = params.event_update_action + ' at ' + params.event_update_date + ' ' + params.event_update_time;
     } else if (is_recovery) {
         emoji = Matrix.wrap_code(Matrix.get_recovery_emoji());
         status_plain = 'RESOLVED';
-        status_fmt = Matrix.get_formatted_resolved_label();
+        status_fmt = Matrix.get_formatted_resolved_label(status_plain);
         extended_status = 'at ' + params.event_recovery_date + ' ' + params.event_recovery_time;
     } else {
         emoji = Matrix.wrap_code(Matrix.get_severity_emoji(params.trigger_severity));
         status_plain = 'PROBLEM';
-        status_fmt = Matrix.get_formatted_problem_label(params.trigger_severity);
+        status_fmt = Matrix.get_formatted_problem_label(params.trigger_severity, status_plain);
         extended_status = 'started at ' + params.event_date + ' ' + params.event_time;
     }
 
@@ -248,14 +250,63 @@ function handle_problem() {
     Matrix.post_message(params.api_url, plain_message, html_message + '<br/>');
 }
 
-// TODO: handle service problems
 function handle_service_problem() {
-    const is_recovery = false;
-    const is_update = false;
+    const is_recovery = params.message === 'service_recovery';
+    const is_update = params.message === 'service_update';
 
-    var message = 'Service event occurred. Please check your Zabbix dashboard.';
+    var emoji, status_plain, status_fmt, extended_status;
 
-    Matrix.post_message(params.api_url, message, message);
+    if (is_update) {
+        emoji = Matrix.wrap_code(Matrix.get_severity_emoji(params.event_severity));
+        status_plain = 'SERVICE PROBLEM';
+        status_fmt = Matrix.get_formatted_problem_label(params.event_severity, status_plain);
+        extended_status = params.event_update_action + ' at ' + params.event_update_date + ' ' + params.event_update_time;
+    } else if (is_recovery) {
+        emoji = Matrix.wrap_code(Matrix.get_recovery_emoji());
+        status_plain = 'SERVICE RESOLVED';
+        status_fmt = Matrix.get_formatted_resolved_label(status_plain);
+        extended_status = 'at ' + params.event_recovery_date + ' ' + params.event_recovery_time;
+    } else {
+        emoji = Matrix.wrap_code(Matrix.get_severity_emoji(params.event_severity));
+        status_plain = 'SERVICE PROBLEM';
+        status_fmt = Matrix.get_formatted_problem_label(params.event_severity, status_plain);
+        extended_status = 'started at ' + params.event_date + ' ' + params.event_time;
+    }
+
+    var html_message =
+        '<strong>' + emoji + ' ' + status_fmt + '</strong> ' + extended_status + ' (Event ID: ' + params.event_id + ')<br/>' +
+        '<strong>Service:</strong> ' + Matrix.wrap_code(params.service_name) + '<br/>' +
+        '<strong>Problem:</strong> ' + Matrix.wrap_code(params.event_name) + '<br/>' +
+        '<strong>Severity: ' + Matrix.get_formatted_severity(params.event_severity) + '</strong><br/>';
+    var plain_message =
+        '' + status_plain + ' ' + extended_status + ' in service "' + params.service_name + '": ' + params.event_name;
+
+    if (Matrix.macro_has_value(params.service_rootcause, '{SERVICE.ROOTCAUSE}')) {
+        html_message += '<strong>Root cause:</strong> ' + params.service_rootcause + '<br/>';
+    }
+
+    if (params.service_description) {
+        html_message += '<strong>Description:</strong> ' + params.service_description + '<br/>';
+    }
+
+    if (is_update) {
+        const event_status = is_recovery ?
+            Matrix.wrap_font(Matrix.color_recovery, params.event_status) :
+            Matrix.wrap_font(Matrix.color_problem, params.event_status);
+        html_message += '<strong>Event status:</strong> ' + event_status + '<br/>';
+        html_message += '<strong>Event age:</strong> ' + params.event_age + '<br/>';
+        html_message += '<strong>Severity changed to:</strong> ' + params.event_update_severity + '<br/>';
+    }
+
+    if (is_recovery) {
+        html_message += '<strong>Original problem time:</strong> ' + params.event_date + ' ' + params.event_time + '<br/>';
+        html_message += '<strong>Problem duration:</strong> ' + params.event_duration + '<br/>';
+    }
+
+    // Matrix.log(4, 'HTML: ' + html_message);
+    // Matrix.log(4, 'Plain: ' + plain_message);
+
+    Matrix.post_message(params.api_url, plain_message, html_message + '<br/>');
 }
 
 if (is_problem) {
