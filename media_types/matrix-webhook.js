@@ -245,7 +245,7 @@ function handle_problem() {
     // Matrix.log(4, 'HTML: ' + html_message);
     // Matrix.log(4, 'Plain: ' + plain_message);
 
-    Matrix.post_message(params.api_url, plain_message, html_message);
+    Matrix.post_message(params.api_url, plain_message, html_message + '<br/>');
 }
 
 // TODO: handle service problems
