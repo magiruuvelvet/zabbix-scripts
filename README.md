@@ -62,6 +62,15 @@ The built-in template wants you to configure an admin account with full read-wri
 
 ## Custom templates
 
+### -----\[ OpenBao Seal Status ]\-----
+
+Monitors the availability of Vault secrets.
+
+This simple template can be added to virtual hosts without any monitoring interfaces. All checks are performed on the Zabbix server (or proxy).
+
+Create monitoring credentials to monitor secret value retrieval:\
+`bao kv put -mount=secret zabbix/openbao-status expected-value=openbao-alive`
+
 ### -----\[ Git Release Monitor ]\-----
 
 Monitors Git repositories for new latest stable releases.

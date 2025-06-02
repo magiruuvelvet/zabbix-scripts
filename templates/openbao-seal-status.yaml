@@ -1,0 +1,143 @@
+zabbix_export:
+  version: '7.2'
+  template_groups:
+    - uuid: 764b6e678f72454b859598f3b437e108
+      name: Templates/Miscellaneous
+  templates:
+    - uuid: 595bf7eebf0d435c878f33aceab1fc34
+      template: 'OpenBao Seal Status'
+      name: 'OpenBao Seal Status'
+      description: |
+        Monitors the availability of Vault secrets.
+        
+        This simple template can be added to virtual hosts without any monitoring interfaces.
+        
+        Create monitoring credentials to monitor secret value retrieval:
+        bao kv put -mount=secret zabbix/openbao-status expected-value=openbao-alive
+      groups:
+        - name: Templates/Miscellaneous
+      vendor:
+        name: magiruuvelvet
+        version: 1.0.0
+      items:
+        - uuid: 6bcf737185d44d978ff5ae7bb79aa232
+          name: 'OpenBao: Get expected seal status value'
+          type: CALCULATED
+          key: openbao.get.expected_seal_status_value
+          history: 1d
+          value_type: CHAR
+          params: '"pending"'
+          description: 'This item monitors the availability of the vault service and the access token.'
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - 'return "{$OPENBAO.SEAL_STATUS.EXPECTED_VALUE}";'
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            - tag: target
+              value: openbao
+          triggers:
+            - uuid: 0b683c67cbcf405e8463755f18dd8a09
+              expression: 'last(/OpenBao Seal Status/openbao.get.expected_seal_status_value)<>"openbao-alive"'
+              name: 'OpenBao: Vault has issues'
+              opdata: 'Got: "{ITEM.LASTVALUE1}", expected: "openbao-alive"'
+              priority: DISASTER
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: target
+                  value: openbao
+        - uuid: 3f735a51b5d84e24b9e5b0a24711db5c
+          name: 'OpenBao: Get seal status'
+          type: HTTP_AGENT
+          key: openbao.get.seal_status
+          history: '0'
+          value_type: TEXT
+          url: '{$OPENBAO.URL}/v1/sys/seal-status'
+          status_codes: ''
+          follow_redirects: 'NO'
+          tags:
+            - tag: target
+              value: openbao
+        - uuid: f417e5db02e54dcb9fff75ab422510a2
+          name: 'OpenBao: Seal status'
+          type: DEPENDENT
+          key: openbao.seal_status
+          valuemap:
+            name: 'OpenBao: Seal status'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.sealed
+              error_handler: CUSTOM_VALUE
+              error_handler_params: 'true'
+            - type: BOOL_TO_DECIMAL
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: openbao.get.seal_status
+          tags:
+            - tag: target
+              value: openbao
+          triggers:
+            - uuid: bbfb05182b7448968a09f582089727a5
+              expression: 'last(/OpenBao Seal Status/openbao.seal_status)=1'
+              name: 'OpenBao: Vault is sealed'
+              priority: DISASTER
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: target
+                  value: openbao
+        - uuid: 1508a57636a249b5a8f4ae70df6d61f1
+          name: 'OpenBao: Version'
+          type: DEPENDENT
+          key: openbao.version
+          value_type: CHAR
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.version
+              error_handler: DISCARD_VALUE
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: openbao.get.seal_status
+          tags:
+            - tag: target
+              value: openbao
+          triggers:
+            - uuid: 5464a286028e4d1585ea4a77e769dded
+              expression: 'change(/OpenBao Seal Status/openbao.version)=1'
+              name: 'OpenBao: Version has changed'
+              priority: INFO
+              manual_close: 'YES'
+              tags:
+                - tag: scope
+                  value: environment
+                - tag: target
+                  value: openbao
+      tags:
+        - tag: class
+          value: software
+        - tag: target
+          value: openbao
+      macros:
+        - macro: '{$OPENBAO.SEAL_STATUS.EXPECTED_VALUE}'
+          type: VAULT
+          value: 'openbao-status:expected-value'
+        - macro: '{$OPENBAO.URL}'
+          value: 'https://127.0.0.1:8200'
+          description: 'URL to the OpenBao server.'
+      valuemaps:
+        - uuid: 7b7b6e7cb63642a893e8f88c9b3291be
+          name: 'OpenBao: Seal status'
+          mappings:
+            - value: '0'
+              newvalue: unsealed
+            - value: '1'
+              newvalue: sealed
