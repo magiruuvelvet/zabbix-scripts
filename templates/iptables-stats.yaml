@@ -10,7 +10,7 @@ zabbix_export:
       description: 'Collects iptables statistics and alerts about unexpected scenarios.'
       vendor:
         name: magiruuvelvet
-        version: 1.0.0
+        version: 1.0.1
       groups:
         - name: Templates/Miscellaneous
       items:
@@ -21,6 +21,9 @@ zabbix_export:
           tags:
             - tag: component
               value: firewall
+            - tag: firewall
+              value: iptables
+            - tag: ipv4
           triggers:
             - uuid: 2ff8d8e033f04dcb9eeda117e0b4e679
               expression: 'change(/iptables stats by Zabbix agent/iptables.rules.count.ipv4)<>0'
@@ -30,6 +33,9 @@ zabbix_export:
               tags:
                 - tag: component
                   value: firewall
+                - tag: firewall
+                  value: iptables
+                - tag: ipv4
                 - tag: scope
                   value: notice
             - uuid: 88c8695c696143bfad98397cd26ac175
@@ -40,6 +46,9 @@ zabbix_export:
               tags:
                 - tag: component
                   value: firewall
+                - tag: firewall
+                  value: iptables
+                - tag: ipv4
                 - tag: scope
                   value: security
         - uuid: 44106a9e6d7349248b8d2c233332838c
@@ -49,6 +58,9 @@ zabbix_export:
           tags:
             - tag: component
               value: firewall
+            - tag: firewall
+              value: iptables
+            - tag: ipv6
           triggers:
             - uuid: 99134079fe3844d6a7c110062a806bab
               expression: 'change(/iptables stats by Zabbix agent/iptables.rules.count.ipv6)<>0'
@@ -58,6 +70,9 @@ zabbix_export:
               tags:
                 - tag: component
                   value: firewall
+                - tag: firewall
+                  value: iptables
+                - tag: ipv6
                 - tag: scope
                   value: notice
             - uuid: ed6d40d18daa421aaa78454399a92117
@@ -68,6 +83,9 @@ zabbix_export:
               tags:
                 - tag: component
                   value: firewall
+                - tag: firewall
+                  value: iptables
+                - tag: ipv6
                 - tag: scope
                   value: security
       tags:
