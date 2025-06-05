@@ -1,0 +1,84 @@
+zabbix_export:
+  version: '7.2'
+  template_groups:
+    - uuid: 764b6e678f72454b859598f3b437e108
+      name: Templates/Miscellaneous
+  templates:
+    - uuid: ee596453df624956bc5f6776337c359c
+      template: 'iptables stats by Zabbix agent'
+      name: 'iptables stats by Zabbix agent'
+      description: 'Collects iptables statistics and alerts about unexpected scenarios.'
+      vendor:
+        name: magiruuvelvet
+        version: 1.0.0
+      groups:
+        - name: Templates/Miscellaneous
+      items:
+        - uuid: 299af4747f524cbd83282c5d5ea81eac
+          name: 'iptables stats: IPv4 rules count'
+          key: iptables.rules.count.ipv4
+          delay: 10m
+          tags:
+            - tag: component
+              value: firewall
+          triggers:
+            - uuid: 2ff8d8e033f04dcb9eeda117e0b4e679
+              expression: 'change(/iptables stats by Zabbix agent/iptables.rules.count.ipv4)<>0'
+              name: 'iptables stats: Number of IPv4 rules has changed'
+              priority: INFO
+              manual_close: 'YES'
+              tags:
+                - tag: component
+                  value: firewall
+                - tag: scope
+                  value: notice
+            - uuid: 88c8695c696143bfad98397cd26ac175
+              expression: 'last(/iptables stats by Zabbix agent/iptables.rules.count.ipv4)<>{$IPTABLES_STATS.EXPECTED_RULES_COUNT.IP4}'
+              name: 'iptables stats: Unexpected number of IPv4 rules'
+              opdata: 'Actual: {ITEM.LASTVALUE}, expected: {$IPTABLES_STATS.EXPECTED_RULES_COUNT.IP4}'
+              priority: AVERAGE
+              tags:
+                - tag: component
+                  value: firewall
+                - tag: scope
+                  value: security
+        - uuid: 44106a9e6d7349248b8d2c233332838c
+          name: 'iptables stats: IPv6 rules count'
+          key: iptables.rules.count.ipv6
+          delay: 10m
+          tags:
+            - tag: component
+              value: firewall
+          triggers:
+            - uuid: 99134079fe3844d6a7c110062a806bab
+              expression: 'change(/iptables stats by Zabbix agent/iptables.rules.count.ipv6)<>0'
+              name: 'iptables stats: Number of IPv6 rules has changed'
+              priority: INFO
+              manual_close: 'YES'
+              tags:
+                - tag: component
+                  value: firewall
+                - tag: scope
+                  value: notice
+            - uuid: ed6d40d18daa421aaa78454399a92117
+              expression: 'last(/iptables stats by Zabbix agent/iptables.rules.count.ipv6)<>{$IPTABLES_STATS.EXPECTED_RULES_COUNT.IP6}'
+              name: 'iptables stats: Unexpected number of IPv6 rules'
+              opdata: 'Actual: {ITEM.LASTVALUE}, expected: {$IPTABLES_STATS.EXPECTED_RULES_COUNT.IP6}'
+              priority: AVERAGE
+              tags:
+                - tag: component
+                  value: firewall
+                - tag: scope
+                  value: security
+      tags:
+        - tag: class
+          value: firewall
+        - tag: target
+          value: iptables
+      macros:
+        - macro: '{$IPTABLES_STATS.EXPECTED_RULES_COUNT.IP4}'
+          value: '0'
+          description: 'The number of expected iptables IPv4 rules on this host.'
+        - macro: '{$IPTABLES_STATS.EXPECTED_RULES_COUNT.IP6}'
+          value: '0'
+          description: 'The number of expected iptables IPv6 rules on this host.'
