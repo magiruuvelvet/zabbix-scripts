@@ -13,7 +13,7 @@ zabbix_export:
         To add repositories for monitoring populate the {$GIT_RELEASE_MONITOR.*.REPO_LIST} macros with a comma-separated list of repositories (username/repo-name) and wait for the LLD rule to execute.
       vendor:
         name: magiruuvelvet
-        version: 1.1.1
+        version: 1.2.0
       groups:
         - name: Templates/Miscellaneous
       discovery_rules:
@@ -73,7 +73,7 @@ zabbix_export:
               name: 'Codeberg: {#CODEBERG_REPOSITORY}: Fetch latest release'
               type: HTTP_AGENT
               key: 'git_release_monitor.codeberg.fetch[{#CODEBERG_REPOSITORY}]'
-              delay: 1d
+              delay: '{$GIT_RELEASE_MONITOR.CODEBERG.UPDATE_INTERVAL}'
               history: '0'
               value_type: TEXT
               url: 'https://codeberg.org/api/v1/repos/{#CODEBERG_REPOSITORY}/releases?draft=false&pre-release=false&limit=1'
@@ -193,7 +193,7 @@ zabbix_export:
               name: 'GitHub: {#GITHUB_REPOSITORY}: Fetch latest release'
               type: HTTP_AGENT
               key: 'git_release_monitor.github.fetch[{#GITHUB_REPOSITORY}]'
-              delay: 12h
+              delay: '{$GIT_RELEASE_MONITOR.GITHUB.UPDATE_INTERVAL}'
               history: '0'
               value_type: TEXT
               url: 'https://api.github.com/repos/{#GITHUB_REPOSITORY}/releases/latest'
@@ -267,5 +267,11 @@ zabbix_export:
       macros:
         - macro: '{$GIT_RELEASE_MONITOR.CODEBERG.REPO_LIST}'
           description: 'Comma-separated list of Codeberg repositories (username/repo-name) to monitor.'
+        - macro: '{$GIT_RELEASE_MONITOR.CODEBERG.UPDATE_INTERVAL}'
+          value: 1d
+          description: 'Interval of how often Codeberg repositories should be checked for updates.'
         - macro: '{$GIT_RELEASE_MONITOR.GITHUB.REPO_LIST}'
           description: 'Comma-separated list of GitHub repositories (username/repo-name) to monitor.'
+        - macro: '{$GIT_RELEASE_MONITOR.GITHUB.UPDATE_INTERVAL}'
+          value: 12h
+          description: 'Interval of how often GitHub repositories should be checked for updates.'
