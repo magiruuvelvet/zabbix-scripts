@@ -13,7 +13,7 @@ zabbix_export:
         To add repositories for monitoring populate the {$GIT_RELEASE_MONITOR.*.REPO_LIST} macros with a comma-separated list of repositories (username/repo-name) and wait for the LLD rule to execute.
       vendor:
         name: magiruuvelvet
-        version: 1.1.0
+        version: 1.1.1
       groups:
         - name: Templates/Miscellaneous
       discovery_rules:
@@ -49,6 +49,8 @@ zabbix_export:
               master_item:
                 key: 'git_release_monitor.codeberg.fetch[{#CODEBERG_REPOSITORY}]'
               tags:
+                - tag: component
+                  value: git-release-monitor
                 - tag: git-release-monitor-provider
                   value: codeberg
                 - tag: git-release-monitor-repository
@@ -59,6 +61,8 @@ zabbix_export:
                   name: 'Codeberg: {#CODEBERG_REPOSITORY}: Failed to fetch release data'
                   priority: WARNING
                   tags:
+                    - tag: component
+                      value: git-release-monitor
                     - tag: git-release-monitor-provider
                       value: codeberg
                     - tag: git-release-monitor-repository
@@ -78,6 +82,8 @@ zabbix_export:
                 - name: User-Agent
                   value: Zabbix
               tags:
+                - tag: component
+                  value: git-release-monitor
                 - tag: git-release-monitor-provider
                   value: codeberg
                 - tag: git-release-monitor-repository
@@ -99,6 +105,8 @@ zabbix_export:
               master_item:
                 key: 'git_release_monitor.codeberg.fetch[{#CODEBERG_REPOSITORY}]'
               tags:
+                - tag: component
+                  value: git-release-monitor
                 - tag: git-release-monitor-provider
                   value: codeberg
                 - tag: git-release-monitor-repository
@@ -114,6 +122,8 @@ zabbix_export:
                   priority: INFO
                   manual_close: 'YES'
                   tags:
+                    - tag: component
+                      value: git-release-monitor
                     - tag: git-release-monitor-provider
                       value: codeberg
                     - tag: git-release-monitor-repository
@@ -159,6 +169,8 @@ zabbix_export:
               master_item:
                 key: 'git_release_monitor.github.fetch[{#GITHUB_REPOSITORY}]'
               tags:
+                - tag: component
+                  value: git-release-monitor
                 - tag: git-release-monitor-provider
                   value: github
                 - tag: git-release-monitor-repository
@@ -169,6 +181,8 @@ zabbix_export:
                   name: 'GitHub: {#GITHUB_REPOSITORY}: Failed to fetch release data'
                   priority: WARNING
                   tags:
+                    - tag: component
+                      value: git-release-monitor
                     - tag: git-release-monitor-provider
                       value: github
                     - tag: git-release-monitor-repository
@@ -188,6 +202,8 @@ zabbix_export:
                 - name: User-Agent
                   value: Zabbix
               tags:
+                - tag: component
+                  value: git-release-monitor
                 - tag: git-release-monitor-provider
                   value: github
                 - tag: git-release-monitor-repository
@@ -209,6 +225,8 @@ zabbix_export:
               master_item:
                 key: 'git_release_monitor.github.fetch[{#GITHUB_REPOSITORY}]'
               tags:
+                - tag: component
+                  value: git-release-monitor
                 - tag: git-release-monitor-provider
                   value: github
                 - tag: git-release-monitor-repository
@@ -224,6 +242,8 @@ zabbix_export:
                   priority: INFO
                   manual_close: 'YES'
                   tags:
+                    - tag: component
+                      value: git-release-monitor
                     - tag: git-release-monitor-provider
                       value: github
                     - tag: git-release-monitor-repository
