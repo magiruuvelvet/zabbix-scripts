@@ -9,10 +9,89 @@ zabbix_export:
       name: 'apt updates'
       vendor:
         name: magiruuvelvet
-        version: 0.10.0
+        version: 0.11.0
       groups:
         - name: 'Templates/Package manager'
       items:
+        - uuid: de42bc9f2e4a40178e3308a1767605cd
+          name: 'APT configuration'
+          type: TRAP
+          key: apt.config.json
+          history: '0'
+          value_type: TEXT
+          tags:
+            - tag: class
+              value: software
+            - tag: target
+              value: apt
+        - uuid: 7491be3e276c41c2aaaa9a8450560719
+          name: 'APT: Automatic installation of security updates'
+          type: DEPENDENT
+          key: apt.config.unattended_upgrade
+          history: 30d
+          trends: '0'
+          valuemap:
+            name: 'APT configuration: boolean'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$[?(@.name=="APT::Periodic::Unattended-Upgrade")].value.first()'
+              error_handler: CUSTOM_ERROR
+              error_handler_params: 'APT::Periodic::Unattended-Upgrade not found'
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: apt.config.json
+          tags:
+            - tag: class
+              value: software
+            - tag: target
+              value: api
+          triggers:
+            - uuid: 49852ce4bf804cc29d00ed9aa658c0f7
+              expression: '{$APT_SECURITY_AUTO_INSTALL}=1 and last(/apt updates/apt.config.unattended_upgrade)=0'
+              name: 'APT: Automatic installation of security updates is disabled'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: security
+                - tag: sla-id
+                  value: security-packages
+        - uuid: 225edeed0599477db4628d1d844b54ca
+          name: 'APT: Automatic update of package lists'
+          type: DEPENDENT
+          key: apt.config.update_package_lists
+          history: 30d
+          trends: '0'
+          valuemap:
+            name: 'APT configuration: boolean'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$[?(@.name=="APT::Periodic::Update-Package-Lists")].value.first()'
+              error_handler: CUSTOM_ERROR
+              error_handler_params: 'APT::Periodic::Update-Package-Lists not found'
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          master_item:
+            key: apt.config.json
+          tags:
+            - tag: class
+              value: software
+            - tag: target
+              value: apt
+          triggers:
+            - uuid: 99f5ed920928404b91b2cadd4c2f7583
+              expression: 'last(/apt updates/apt.config.update_package_lists)=0'
+              name: 'APT: Automatic update of package lists is disabled'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: security
+                - tag: sla-id
+                  value: security-packages
         - uuid: bceb2dfbb8d44a3b9ff21634db5b1e5d
           name: 'Interval counter'
           type: CALCULATED
@@ -122,9 +201,20 @@ zabbix_export:
         - macro: '{$APT_LAST_UPDATE_CHECK_MAX_AGE}'
           value: '45000'
           description: 'Max allowed age in seconds for successful update checks (defaults to 12.5 hours)'
+        - macro: '{$APT_SECURITY_AUTO_INSTALL}'
+          value: '1'
+          description: '(Boolean) Set to false(0) if this host has automatic installation of security updates disabled.'
         - macro: '{$APT_SECURITY_REMIND_INTERVAL}'
           value: 7d
           description: 'Remind about pending security updates every 7 days.'
+      valuemaps:
+        - uuid: 772769b9f84f4ac6a2a3e69fca92a208
+          name: 'APT configuration: boolean'
+          mappings:
+            - value: '1'
+              newvalue: enabled
+            - value: '0'
+              newvalue: disabled
   triggers:
     - uuid: 1775efade66b47aeb8ae40d621d5e0a0
       expression: 'min(/apt updates/apt.packagestoupdate.count.security,{$APT_SECURITY_REMIND_INTERVAL})<>0 and change(/apt updates/apt.helper.inverval.counter)=1'
