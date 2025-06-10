@@ -9,7 +9,7 @@ zabbix_export:
       name: 'apt updates'
       vendor:
         name: magiruuvelvet
-        version: 0.11.0
+        version: 0.11.1
       groups:
         - name: 'Templates/Package manager'
       items:
@@ -36,8 +36,8 @@ zabbix_export:
             - type: JSONPATH
               parameters:
                 - '$[?(@.name=="APT::Periodic::Unattended-Upgrade")].value.first()'
-              error_handler: CUSTOM_ERROR
-              error_handler_params: 'APT::Periodic::Unattended-Upgrade not found'
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
             - type: DISCARD_UNCHANGED_HEARTBEAT
               parameters:
                 - 1h
@@ -70,8 +70,8 @@ zabbix_export:
             - type: JSONPATH
               parameters:
                 - '$[?(@.name=="APT::Periodic::Update-Package-Lists")].value.first()'
-              error_handler: CUSTOM_ERROR
-              error_handler_params: 'APT::Periodic::Update-Package-Lists not found'
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
             - type: DISCARD_UNCHANGED_HEARTBEAT
               parameters:
                 - 1h
