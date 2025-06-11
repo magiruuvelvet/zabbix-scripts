@@ -9,7 +9,7 @@ zabbix_export:
       name: 'apt updates'
       vendor:
         name: magiruuvelvet
-        version: 0.11.1
+        version: 0.11.2
       groups:
         - name: 'Templates/Package manager'
       items:
@@ -99,6 +99,7 @@ zabbix_export:
           delay: 10m
           history: 60d
           trends: '0'
+          units: s
           params: 'floor(now() / {$APT_SECURITY_REMIND_INTERVAL})'
           description: 'Helper item to re-trigger the updates pending alert.'
           tags:
@@ -217,12 +218,13 @@ zabbix_export:
               newvalue: disabled
   triggers:
     - uuid: 1775efade66b47aeb8ae40d621d5e0a0
-      expression: 'min(/apt updates/apt.packagestoupdate.count.security,{$APT_SECURITY_REMIND_INTERVAL})<>0 and change(/apt updates/apt.helper.inverval.counter)=1'
+      expression: 'min(/apt updates/apt.packagestoupdate.count.security,{$APT_SECURITY_REMIND_INTERVAL})<>0 and change(/apt updates/apt.helper.inverval.counter)<>0'
       recovery_mode: RECOVERY_EXPRESSION
       recovery_expression: 'last(/apt updates/apt.packagestoupdate.count.security)=0'
       name: 'Security updates pending'
       opdata: '{ITEM.LASTVALUE1} security updates are pending'
       priority: HIGH
+      type: MULTIPLE
       tags:
         - tag: scope
           value: security
