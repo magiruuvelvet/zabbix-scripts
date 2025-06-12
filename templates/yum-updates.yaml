@@ -7,18 +7,18 @@ zabbix_export:
     - uuid: b54f9bf59d6f45a1acfe5f40fa540a7c
       template: 'yum updates'
       name: 'yum updates'
-      groups:
-        - name: 'Templates/Package manager'
       vendor:
         name: magiruuvelvet
-        version: 1.0.0
+        version: 1.1.0
+      groups:
+        - name: 'Templates/Package manager'
       items:
         - uuid: 826381c571ec47c8aec99d4eb3c329ba
           name: 'Packages to update'
           type: TRAP
           key: yum.packagestoupdate.count
-          history: 15d
-          trends: 30d
+          history: 30d
+          trends: 90d
           tags:
             - tag: class
               value: software
@@ -39,7 +39,7 @@ zabbix_export:
           name: 'Packages to update (details)'
           type: TRAP
           key: yum.packagestoupdate.details
-          history: 15d
+          history: 30d
           value_type: TEXT
           tags:
             - tag: class
@@ -50,8 +50,8 @@ zabbix_export:
           name: 'Last update check timestamp'
           type: TRAP
           key: yum.stats.timestamp.last_update_check
-          history: 15d
-          trends: 30d
+          history: 30d
+          trends: 90d
           units: unixtime
           description: 'Timestamp when the last update check was received.'
           tags:
@@ -64,8 +64,8 @@ zabbix_export:
           type: CALCULATED
           key: yum.stats.timestamp.last_update_check_age
           delay: 10m
-          history: 15d
-          trends: 30d
+          history: 30d
+          trends: 90d
           units: s
           params: now()-last(//yum.stats.timestamp.last_update_check)
           description: |
@@ -88,6 +88,31 @@ zabbix_export:
                   value: security
                 - tag: sla-id
                   value: security-packages
+        - uuid: eedaa12c3b56419a9344d81497522535
+          name: 'yum: Reboot required'
+          type: TRAP
+          key: yum.system.needs_restarting.reboothint.status
+          history: 30d
+          trends: 90d
+          valuemap:
+            name: 'yum: Reboot required boolean'
+          tags:
+            - tag: class
+              value: software
+            - tag: target
+              value: yum
+        - uuid: 231b141ef1f54740aaecde57aa2f1e7c
+          name: 'yum: Services requiring restart'
+          type: TRAP
+          key: yum.system.needs_restarting.services.count
+          history: 30d
+          trends: 90d
+          description: 'needs-restarting -s'
+          tags:
+            - tag: class
+              value: software
+            - tag: target
+              value: yum
       tags:
         - tag: class
           value: software
@@ -97,3 +122,11 @@ zabbix_export:
         - macro: '{$YUM_LAST_UPDATE_CHECK_MAX_AGE}'
           value: '45000'
           description: 'Max allowed age in seconds for successful update checks (defaults to 12.5 hours)'
+      valuemaps:
+        - uuid: 6721132541954ff58691158d001173a8
+          name: 'yum: Reboot required boolean'
+          mappings:
+            - value: '1'
+              newvalue: 'true'
+            - value: '0'
+              newvalue: 'false'
