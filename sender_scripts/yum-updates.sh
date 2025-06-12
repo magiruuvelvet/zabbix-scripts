@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# NOTES:
+#  - If you are on Rocky Linux, install the `yum-utils` compatibility package.
+
 export LANG=C
 export LANGUAGE=
 
