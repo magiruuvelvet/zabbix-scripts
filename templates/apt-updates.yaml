@@ -9,7 +9,7 @@ zabbix_export:
       name: 'apt updates'
       vendor:
         name: magiruuvelvet
-        version: 0.11.2
+        version: 0.11.3
       groups:
         - name: 'Templates/Package manager'
       items:
@@ -47,17 +47,21 @@ zabbix_export:
             - tag: class
               value: software
             - tag: target
-              value: api
+              value: apt
           triggers:
             - uuid: 49852ce4bf804cc29d00ed9aa658c0f7
               expression: '{$APT_SECURITY_AUTO_INSTALL}=1 and last(/apt updates/apt.config.unattended_upgrade)=0'
               name: 'APT: Automatic installation of security updates is disabled'
               priority: AVERAGE
               tags:
+                - tag: apt-alert-type
+                  value: single
                 - tag: scope
                   value: security
                 - tag: sla-id
                   value: security-packages
+                - tag: target
+                  value: apt
         - uuid: 225edeed0599477db4628d1d844b54ca
           name: 'APT: Automatic update of package lists'
           type: DEPENDENT
@@ -88,10 +92,14 @@ zabbix_export:
               name: 'APT: Automatic update of package lists is disabled'
               priority: AVERAGE
               tags:
+                - tag: apt-alert-type
+                  value: single
                 - tag: scope
                   value: security
                 - tag: sla-id
                   value: security-packages
+                - tag: target
+                  value: apt
         - uuid: bceb2dfbb8d44a3b9ff21634db5b1e5d
           name: 'Interval counter'
           type: CALCULATED
@@ -125,10 +133,14 @@ zabbix_export:
               opdata: '{ITEM.VALUE} security updates are available'
               priority: AVERAGE
               tags:
+                - tag: apt-alert-type
+                  value: single
                 - tag: scope
                   value: security
                 - tag: sla-id
                   value: security-packages
+                - tag: target
+                  value: apt
         - uuid: 759d5eb7333d4d4f8529a861b8def1e3
           name: 'Packages to update (total)'
           type: TRAP
@@ -147,10 +159,14 @@ zabbix_export:
               opdata: '{ITEM.VALUE} regular updates are available'
               priority: WARNING
               tags:
+                - tag: apt-alert-type
+                  value: single
                 - tag: scope
                   value: security
                 - tag: sla-id
                   value: security-packages
+                - tag: target
+                  value: apt
         - uuid: 2078a0fbdbff405eaa0205524efc78d9
           name: 'Last update check timestamp'
           type: TRAP
@@ -189,10 +205,14 @@ zabbix_export:
               opdata: 'No successful update check received in the last {$APT_LAST_UPDATE_CHECK_MAX_AGE} seconds. Please check your server logs.'
               priority: AVERAGE
               tags:
+                - tag: apt-alert-type
+                  value: single
                 - tag: scope
                   value: security
                 - tag: sla-id
                   value: security-packages
+                - tag: target
+                  value: apt
       tags:
         - tag: class
           value: software
@@ -225,8 +245,13 @@ zabbix_export:
       opdata: '{ITEM.LASTVALUE1} security updates are pending'
       priority: HIGH
       type: MULTIPLE
+      manual_close: 'YES'
       tags:
+        - tag: apt-alert-type
+          value: multiple
         - tag: scope
           value: security
         - tag: sla-id
           value: security-packages
+        - tag: target
+          value: apt
