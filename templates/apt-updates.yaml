@@ -9,7 +9,7 @@ zabbix_export:
       name: 'apt updates'
       vendor:
         name: magiruuvelvet
-        version: 0.11.3
+        version: 0.12.0
       groups:
         - name: 'Templates/Package manager'
       items:
@@ -213,6 +213,20 @@ zabbix_export:
                   value: security-packages
                 - tag: target
                   value: apt
+        - uuid: 7fd0104b9abb48dbb4439bff9ef4fd66
+          name: 'APT: Reboot required'
+          type: ZABBIX_ACTIVE
+          key: 'vfs.file.exists[/var/run/reboot-required,file]'
+          delay: 10m
+          history: 30d
+          trends: 90d
+          valuemap:
+            name: 'APT: Reboot required boolean'
+          tags:
+            - tag: class
+              value: software
+            - tag: target
+              value: apt
       tags:
         - tag: class
           value: software
@@ -229,6 +243,13 @@ zabbix_export:
           value: 7d
           description: 'Remind about pending security updates every 7 days.'
       valuemaps:
+        - uuid: 226ccb7b7edc4f8180dabd3d10bc0963
+          name: 'APT: Reboot required boolean'
+          mappings:
+            - value: '1'
+              newvalue: 'true'
+            - value: '0'
+              newvalue: 'false'
         - uuid: 772769b9f84f4ac6a2a3e69fca92a208
           name: 'APT configuration: boolean'
           mappings:
