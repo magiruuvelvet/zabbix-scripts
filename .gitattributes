@@ -1,3 +1,7 @@
 # include YAML in repo stats
 *.yaml linguist-detectable=true
 *.yaml linguist-language=YAML
+
+# classify SQL files in pgsql/ as PLpgSQL and include them in repo stats
+/pgsql/**/*.sql linguist-detectable=true
+/pgsql/**/*.sql linguist-language=PLpgSQL
