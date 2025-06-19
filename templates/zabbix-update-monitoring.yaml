@@ -13,7 +13,7 @@ zabbix_export:
         Based on this blog post with extra improvements: https://blog.zabbix.com/monitor-new-zabbix-releases-natively/28105/
       vendor:
         name: magiruuvelvet
-        version: 2.0.0
+        version: 2.0.1
       groups:
         - name: Templates/Miscellaneous
       items:
@@ -143,6 +143,7 @@ zabbix_export:
           value: '^.*$'
           description: 'Regular expression of Zabbix versions to include.'
         - macro: '{$ZABBIX_UPDATE_MONITORING.VERSION.NOT_MATCHES}'
+          value: ^\s$
           description: 'Regular expression of Zabbix versions to exclude.'
       valuemaps:
         - uuid: 1fcdd469f0f149e292e2987dcf03fc8f
