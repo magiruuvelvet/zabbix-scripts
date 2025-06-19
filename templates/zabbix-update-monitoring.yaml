@@ -1,0 +1,154 @@
+zabbix_export:
+  version: '7.2'
+  template_groups:
+    - uuid: 764b6e678f72454b859598f3b437e108
+      name: Templates/Miscellaneous
+  templates:
+    - uuid: a7847a45a6594c218533b1123cad8e6a
+      template: 'Zabbix Update Monitoring'
+      name: 'Zabbix Update Monitoring'
+      description: |
+        Monitors available Zabbix Software Updates using Zabbix itself.
+        
+        Based on this blog post with extra improvements: https://blog.zabbix.com/monitor-new-zabbix-releases-natively/28105/
+      vendor:
+        name: magiruuvelvet
+        version: 2.0.0
+      groups:
+        - name: Templates/Miscellaneous
+      items:
+        - uuid: db2c6cc765134d3ea34b40d00b005e25
+          name: 'Get raw data'
+          type: HTTP_AGENT
+          key: zabbix_update_monitoring.get_raw_data
+          delay: '{$ZABBIX_UPDATE_MONITORING.UPDATE_CHECK_INTERVAL}'
+          history: 1d
+          value_type: TEXT
+          description: 'Obtains the Zabbix Update JSON for several Zabbix versions.'
+          preprocessing:
+            - type: STR_REPLACE
+              parameters:
+                - versions
+                - data
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
+          timeout: 10s
+          url: 'https://services.zabbix.com/updates/v1'
+          follow_redirects: 'NO'
+          tags:
+            - tag: target
+              value: zabbix
+      discovery_rules:
+        - uuid: f01aae679cc143ac9a588e2c685345fd
+          name: 'Discover Zabbix versions'
+          type: DEPENDENT
+          key: zabbix_update_monitoring.discover.versions
+          filter:
+            evaltype: AND
+            conditions:
+              - macro: '{#VERSION}'
+                value: '{$ZABBIX_UPDATE_MONITORING.VERSION.MATCHES}'
+              - macro: '{#VERSION}'
+                value: '{$ZABBIX_UPDATE_MONITORING.VERSION.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+          enabled_lifetime_type: DISABLE_AFTER
+          enabled_lifetime: 2d
+          description: 'Discovers all available Zabbix versions.'
+          item_prototypes:
+            - uuid: 880e893ddfd146e4ba2e6ee0927d3ec0
+              name: 'Version {#VERSION}: Created'
+              type: DEPENDENT
+              key: 'zabbix_update_monitoring.version.created[{#VERSION}]'
+              history: 30d
+              trends: '0'
+              units: unixtime
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.data.[?(@.version==''{#VERSION}'')].latest_release.created.first()'
+              master_item:
+                key: zabbix_update_monitoring.get_raw_data
+              tags:
+                - tag: component
+                  value: zabbix-update
+                - tag: target
+                  value: zabbix
+            - uuid: 752806fabfc74d7c82eba873bfcadcbf
+              name: 'Version {#VERSION}: End of full support'
+              type: DEPENDENT
+              key: 'zabbix_update_monitoring.version.end_of_full_support[{#VERSION}]'
+              history: 30d
+              trends: '0'
+              valuemap:
+                name: 'Zabbix: End of full support status'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.data.[?(@.version==''{#VERSION}'')].end_of_full_support.first()'
+                - type: BOOL_TO_DECIMAL
+              master_item:
+                key: zabbix_update_monitoring.get_raw_data
+              tags:
+                - tag: component
+                  value: zabbix-update
+                - tag: target
+                  value: zabbix
+            - uuid: 2e92fdf49b314bfda46f3946eca8eb7c
+              name: 'Version {#VERSION}: Release'
+              type: DEPENDENT
+              key: 'zabbix_update_monitoring.version.release[{#VERSION}]'
+              history: 30d
+              value_type: TEXT
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.data.[?(@.version==''{#VERSION}'')].latest_release.release.first()'
+              master_item:
+                key: zabbix_update_monitoring.get_raw_data
+              tags:
+                - tag: component
+                  value: zabbix-update
+                - tag: target
+                  value: zabbix
+              trigger_prototypes:
+                - uuid: b343da505598482b8003ea7d8fb2986e
+                  expression: 'change(/Zabbix Update Monitoring/zabbix_update_monitoring.version.release[{#VERSION}])=1'
+                  name: 'New Zabbix version released'
+                  event_name: 'New Zabbix version released: {?last(//zabbix_update_monitoring.version.release[{#VERSION}])}'
+                  url_name: 'View release notes'
+                  url: 'https://www.zabbix.com/rn/rn{ITEM.LASTVALUE1}'
+                  priority: AVERAGE
+                  manual_close: 'YES'
+                  tags:
+                    - tag: component
+                      value: zabbix-update
+                    - tag: target
+                      value: zabbix
+          master_item:
+            key: zabbix_update_monitoring.get_raw_data
+          lld_macro_paths:
+            - lld_macro: '{#VERSION}'
+              path: $..version.first()
+      tags:
+        - tag: class
+          value: software
+        - tag: target
+          value: zabbix
+      macros:
+        - macro: '{$ZABBIX_UPDATE_MONITORING.UPDATE_CHECK_INTERVAL}'
+          value: 12h
+          description: 'Interval how often the version endpoint should be checked.'
+        - macro: '{$ZABBIX_UPDATE_MONITORING.VERSION.MATCHES}'
+          value: '^.*$'
+          description: 'Regular expression of Zabbix versions to include.'
+        - macro: '{$ZABBIX_UPDATE_MONITORING.VERSION.NOT_MATCHES}'
+          description: 'Regular expression of Zabbix versions to exclude.'
+      valuemaps:
+        - uuid: 1fcdd469f0f149e292e2987dcf03fc8f
+          name: 'Zabbix: End of full support status'
+          mappings:
+            - value: '0'
+              newvalue: supported
+            - value: '1'
+              newvalue: 'end of full support'
