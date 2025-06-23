@@ -25,4 +25,4 @@ case "$2" in
     *) curl_options="" ;;
 esac
 
-exec curl $curl_options "$1"
+exec curl --silent $curl_options "$1"
