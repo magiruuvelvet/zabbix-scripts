@@ -9,7 +9,7 @@ zabbix_export:
       name: 'yum updates'
       vendor:
         name: magiruuvelvet
-        version: 1.1.0
+        version: 1.1.1
       groups:
         - name: 'Templates/Package manager'
       items:
@@ -29,7 +29,7 @@ zabbix_export:
               expression: 'last(/yum updates/yum.packagestoupdate.count)>0'
               name: 'Updates available'
               opdata: '{ITEM.VALUE} packages need updating'
-              priority: WARNING
+              priority: INFO
               tags:
                 - tag: scope
                   value: security
