@@ -9,7 +9,7 @@ zabbix_export:
       name: 'apt updates'
       vendor:
         name: magiruuvelvet
-        version: 0.12.0
+        version: 0.12.1
       groups:
         - name: 'Templates/Package manager'
       items:
@@ -52,7 +52,7 @@ zabbix_export:
             - uuid: 49852ce4bf804cc29d00ed9aa658c0f7
               expression: '{$APT_SECURITY_AUTO_INSTALL}=1 and last(/apt updates/apt.config.unattended_upgrade)=0'
               name: 'APT: Automatic installation of security updates is disabled'
-              priority: AVERAGE
+              priority: WARNING
               tags:
                 - tag: apt-alert-type
                   value: single
@@ -90,7 +90,7 @@ zabbix_export:
             - uuid: 99f5ed920928404b91b2cadd4c2f7583
               expression: 'last(/apt updates/apt.config.update_package_lists)=0'
               name: 'APT: Automatic update of package lists is disabled'
-              priority: AVERAGE
+              priority: WARNING
               tags:
                 - tag: apt-alert-type
                   value: single
@@ -131,7 +131,7 @@ zabbix_export:
               expression: 'last(/apt updates/apt.packagestoupdate.count.security)>0'
               name: 'Security updates available'
               opdata: '{ITEM.VALUE} security updates are available'
-              priority: AVERAGE
+              priority: INFO
               tags:
                 - tag: apt-alert-type
                   value: single
@@ -157,7 +157,7 @@ zabbix_export:
               expression: 'last(/apt updates/apt.packagestoupdate.count.total)>0'
               name: 'Regular updates available'
               opdata: '{ITEM.VALUE} regular updates are available'
-              priority: WARNING
+              priority: INFO
               tags:
                 - tag: apt-alert-type
                   value: single
@@ -264,7 +264,7 @@ zabbix_export:
       recovery_expression: 'last(/apt updates/apt.packagestoupdate.count.security)=0'
       name: 'Security updates pending'
       opdata: '{ITEM.LASTVALUE1} security updates are pending'
-      priority: HIGH
+      priority: WARNING
       type: MULTIPLE
       manual_close: 'YES'
       tags:
